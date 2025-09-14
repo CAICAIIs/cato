@@ -2,12 +2,11 @@ package db
 
 import (
 	"github.com/ncuhome/cato/generated"
-	"github.com/ncuhome/cato/src/plugins"
 	"text/template"
 )
 
 type TableMessageEx struct {
-	message *plugins.ModelsPlugger
+	message *ModelsPlugger
 
 	value *generated.TableOption
 
@@ -28,7 +27,7 @@ func (t *TableMessageEx) Init(tmpl *template.Template) {
 	t.tmpl = tmpl
 }
 
-func (t *TableMessageEx) LoadPlugger(message *plugins.ModelsPlugger) {
+func (t *TableMessageEx) LoadPlugger(message *ModelsPlugger) {
 	t.message = message
 }
 
@@ -57,6 +56,6 @@ func (t *TableMessageEx) Register() error {
 		pack.TableName = t.value.NameOption.GetSimpleName()
 		return t.tmpl.Execute(t.message.BorrowMethodsWriter(), pack)
 	}
-	// empty table name will impl in extra file
+	// empty table name will impl in an extra file
 	return t.tmpl.Execute(t.message.BorrowExtraWriter(), pack)
 }

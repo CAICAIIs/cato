@@ -1,4 +1,4 @@
-package plugins
+package db
 
 import (
 	"google.golang.org/protobuf/compiler/protogen"
@@ -23,4 +23,12 @@ func (fp *FieldsPlugger) GetName() string {
 func (fp *FieldsPlugger) GetGoType() string {
 	// todo: type map
 	return ""
+}
+
+func (fp *FieldsPlugger) GetContent() string {
+	ss := make([]string, len(fp.fields))
+	for i, field := range fp.fields {
+		ss[i] = field.String()
+	}
+	return strings.Join(ss, " ")
 }

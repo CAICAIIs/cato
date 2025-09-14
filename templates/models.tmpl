@@ -1,0 +1,18 @@
+// generate by cato generator, DO NOT EDIT
+package {{ .PackageName }}
+
+import (
+    {{ range .Imports }}
+    "{{ . }}"
+    {{ end }}
+)
+
+type {{ .ModelName }}Model struct {
+{{ range .Fields }}
+{{ . }}
+{{ end }}
+}
+
+{{range .Methods}}
+{{ . }}
+{{ end }}

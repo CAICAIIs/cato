@@ -1,15 +1,15 @@
 package db
 
 import (
+	"errors"
 	"github.com/ncuhome/cato/generated"
-	"github.com/ncuhome/cato/src/plugins"
 	"github.com/ncuhome/cato/src/plugins/common"
 	"text/template"
 )
 
 type ColumnFieldEx struct {
-	field  *plugins.FieldsPlugger
-	parent *plugins.ModelsPlugger
+	field  *FieldsPlugger
+	parent *ModelsPlugger
 
 	value *generated.ColumnOption
 
@@ -31,7 +31,7 @@ func (c *ColumnFieldEx) Init(tmpl *template.Template) {
 	c.tmpl = tmpl
 }
 
-func (c *ColumnFieldEx) LoadPlugger(field *plugins.FieldsPlugger, message *plugins.ModelsPlugger) {
+func (c *ColumnFieldEx) LoadPlugger(field *FieldsPlugger, message *ModelsPlugger) {
 	c.field = field
 	c.parent = message
 }
@@ -53,5 +53,18 @@ func (c *ColumnFieldEx) AsTmplPack() interface{} {
 }
 
 func (c *ColumnFieldEx) Register() error {
-	return nil
+	// self-tags has the highest priority
+	selfTags := c.value.GetTags()
+	wr, ok := c.parent.BorrowFieldsWriter(c.field.GetName())
+	if !ok {
+		return errors.New("could not create writer")
+	}
+	for _, tag := range selfTags {
+		c.tags[tag.TagName] = &common.Kv{
+			Key:   tag.TagName,
+			Value: tag.TagValue,
+		}
+	}
+	packData := c.AsTmplPack()
+	return c.tmpl.Execute(wr, packData)
 }
