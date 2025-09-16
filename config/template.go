@@ -1,10 +1,9 @@
 package config
 
 import (
-	"errors"
-	"fmt"
+	"embed"
+	"io"
 	"log"
-	"os"
 	"path/filepath"
 	"text/template"
 )
@@ -13,24 +12,35 @@ const (
 	tmplPath = "templates/"
 )
 
-var templates map[string]*template.Template
+var (
+	//go:embed templates/*
+	templatesFs embed.FS
+
+	templates = make(map[string]*template.Template)
+)
+var templateNames = []string{
+	"column_field.tmpl",
+	"models.tmpl",
+	"table_name.tmpl",
+}
 
 func init() {
-	templates = make(map[string]*template.Template)
-	err := filepath.Walk(tmplPath, func(path string, info os.FileInfo, err error) error {
+	for _, name := range templateNames {
+		path := filepath.Join("templates", name)
+		fs, err := templatesFs.Open(path)
 		if err != nil {
-			return err
+			log.Fatalln(err)
 		}
-		name := info.Name()
-		tmpl, err := template.New(name).ParseFiles(path)
+		data, err := io.ReadAll(fs)
 		if err != nil {
-			return errors.Join(fmt.Errorf("parse template %q: %w", name, err), err)
+			log.Fatalln(err)
+		}
+		tmpl, err := template.New(name).Parse(string(data))
+		if err != nil {
+			log.Fatalln(err)
 		}
 		templates[name] = tmpl
-		return nil
-	})
-	if err != nil {
-		log.Fatal(err)
+
 	}
 }
 

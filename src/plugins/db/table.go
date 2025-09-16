@@ -1,8 +1,9 @@
 package db
 
 import (
-	"github.com/ncuhome/cato/generated"
 	"text/template"
+
+	"github.com/ncuhome/cato/generated"
 )
 
 type TableMessageEx struct {
@@ -13,18 +14,19 @@ type TableMessageEx struct {
 	tmpl *template.Template
 }
 
-type TableMessageExTmlPack struct {
-	MessageName string
-	TableName   string
-	Comment     string
+type TableMessageExTmplPack struct {
+	MessageTypeName string
+	TableName       string
+	Comment         string
 }
 
 func (t *TableMessageEx) GetTmplFileName() string {
 	return "table_name.tmpl"
 }
 
-func (t *TableMessageEx) Init(tmpl *template.Template) {
+func (t *TableMessageEx) Init(tmpl *template.Template, value *generated.TableOption) {
 	t.tmpl = tmpl
+	t.value = value
 }
 
 func (t *TableMessageEx) LoadPlugger(message *ModelsPlugger) {
@@ -36,10 +38,10 @@ func (t *TableMessageEx) AsTmplPack() interface{} {
 	if nameOpt == nil || nameOpt.GetLazyName() || nameOpt.GetSimpleName() == "" {
 		return nil
 	}
-	return &TableMessageExTmlPack{
-		MessageName: t.message.GetMessageName(),
-		TableName:   nameOpt.GetSimpleName(),
-		Comment:     t.value.GetComment(),
+	return &TableMessageExTmplPack{
+		MessageTypeName: t.message.GetMessageName(),
+		TableName:       nameOpt.GetSimpleName(),
+		Comment:         t.value.GetComment(),
 	}
 }
 
@@ -47,9 +49,9 @@ func (t *TableMessageEx) Register() error {
 	if t.value == nil || t.message == nil {
 		return nil
 	}
-	pack := &TableMessageExTmlPack{
-		MessageName: t.message.GetMessageName(),
-		Comment:     t.value.GetNameOption().GetSimpleName(),
+	pack := &TableMessageExTmplPack{
+		MessageTypeName: t.message.GetMessageName(),
+		Comment:         t.value.GetComment(),
 	}
 	// check if the table name is simple
 	if t.value.NameOption.GetSimpleName() != "" {

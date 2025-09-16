@@ -2,13 +2,16 @@ package db
 
 import (
 	"fmt"
-	"github.com/ncuhome/cato/generated"
-	"google.golang.org/protobuf/compiler/protogen"
-	"google.golang.org/protobuf/reflect/protoreflect"
 	"io"
 	"log"
 	"strings"
 	"text/template"
+
+	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/ncuhome/cato/generated"
+	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
 type ModelsPlugger struct {
@@ -30,8 +33,9 @@ type ModelsPluggerPack struct {
 	Methods     []string
 }
 
-func (mp *ModelsPlugger) LoadContext(message *protogen.Message) {
+func (mp *ModelsPlugger) LoadContext(message *protogen.Message, file *protogen.File) {
 	mp.message = message
+	mp.parent = file
 	mp.fields = make(map[string]*FieldsPlugger)
 	mp.imports = make([]*strings.Builder, 0)
 	mp.methods = make([]*strings.Builder, 0)
@@ -98,7 +102,7 @@ func (mp *ModelsPlugger) AsTmplPack() *ModelsPluggerPack {
 		methods[index] = method.String()
 	}
 	return &ModelsPluggerPack{
-		PackageName: mp.parent.Proto.GetPackage(),
+		PackageName: utils.GetGoPackageName(mp.parent.GoImportPath),
 		Imports:     imports,
 		ModelName:   mp.message.GoIdent.GoName,
 		Fields:      fields,
@@ -115,7 +119,7 @@ func (mp *ModelsPlugger) Init(template *template.Template) {
 }
 
 func (mp *ModelsPlugger) GenerateFile() string {
-	return fmt.Sprintf("%s.cato.go", mp.message.GoIdent.GoName)
+	return fmt.Sprintf("%s.cato.go", strings.ToLower(mp.message.GoIdent.GoName))
 }
 
 func (mp *ModelsPlugger) GenerateContent() string {

@@ -1,9 +1,10 @@
 package db
 
 import (
-	"google.golang.org/protobuf/compiler/protogen"
 	"io"
 	"strings"
+
+	"google.golang.org/protobuf/compiler/protogen"
 )
 
 type FieldsPlugger struct {
