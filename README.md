@@ -1,5 +1,6 @@
 # Cato
 This is now a simple demo for part of cato project, just `protoc-gen-*` plugin
+
 now you can test by
 ```shell
 make install
