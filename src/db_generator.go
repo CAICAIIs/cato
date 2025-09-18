@@ -8,7 +8,7 @@ import (
 	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/ncuhome/cato/config"
-	db2 "github.com/ncuhome/cato/src/plugins"
+	"github.com/ncuhome/cato/src/plugins"
 	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
@@ -33,7 +33,7 @@ func (g *DbGenerator) Generate(resp *pluginpb.CodeGeneratorResponse) *pluginpb.C
 		}
 		for _, message := range file.Messages {
 			// test for single plugger
-			mp := new(db2.MessagesPlugger)
+			mp := new(plugins.MessagesPlugger)
 			mp.Init(config.GetTemplate(mp.GetTemplateName()))
 			mp.LoadContext(message, file)
 			ok, err := mp.Active()
