@@ -1,7 +1,6 @@
 package db
 
 import (
-	"fmt"
 	"log"
 	"text/template"
 
@@ -75,20 +74,6 @@ func (c *ColFieldButter) Register(ctx *common.GenContext) error {
 	}
 	writers := ctx.GetWriters()
 	// check if the value has a json-trans option
-	hasJsonTrans := c.value.GetJsonTrans() != nil
-	if hasJsonTrans {
-		// register str type raw field
-		fieldWriter := writers.FieldWriter()
-		extraFieldData := &common.FieldPack{
-			Name:   fmt.Sprintf("%sRaw", ctx.GetNowField().GoName),
-			GoType: "string",
-		}
-		err := config.GetTemplate(config.CommonFieldTmpl).Execute(fieldWriter, extraFieldData)
-		if err != nil {
-			return err
-		}
-		// register json trans
-	}
 	packData := c.AsTmplPack(ctx)
 	return c.tmpl.Execute(writers.TagWriter(), packData)
 }
