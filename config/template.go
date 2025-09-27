@@ -25,6 +25,7 @@ var templateNames = []string{
 	"column_field.tmpl",
 	"models.tmpl",
 	"table_name.tmpl",
+	"json_trans.tmpl",
 }
 
 func init() {

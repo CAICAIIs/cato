@@ -35,19 +35,15 @@ func (c *ColFieldButter) Init(value interface{}) {
 		log.Fatalln("[-] cato ColFieldButter except ColumnOption")
 	}
 	c.value = exValue
-	c.tmpl = config.GetTemplate(c.GetTmplFileName())
+	c.tmpl = config.GetTemplate(c.tmplName())
 	c.tags = make(map[string]*common.Kv)
 }
 
-func (c *ColFieldButter) GetTmplFileName() string {
+func (c *ColFieldButter) tmplName() string {
 	return config.CommonTagTmpl
 }
 
-func (c *ColFieldButter) LoadPlugger() {
-
-}
-
-func (c *ColFieldButter) AsTmplPack(ctx *common.GenContext) interface{} {
+func (c *ColFieldButter) AsTmplPack(_ *common.GenContext) interface{} {
 	tags, index := make([]common.Kv, len(c.tags)), 0
 	for k, v := range c.tags {
 		tags[index] = common.Kv{

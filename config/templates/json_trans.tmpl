@@ -1,0 +1,33 @@
+func (models *{{ .MessageTypeName}}) Get{{.FieldName}}() ({{.FieldType}}, error) {
+    {{if .LazyLoad}}
+    if models.inner{{.FieldName}} != nil {
+        return models.inner{{.FieldName}}, nil
+    }
+    {{end}}
+    data := new({{.FieldTypeRaw}})
+    if err := json.Unmarshal([]byte(models.{{.FieldName}}), data); err != nil {
+        return nil, err
+    }
+    {{if .LazyLoad}}
+    models.inner{{.FieldName}} = data
+    return models.inner{{.FieldName}}, nil
+    {{else}}
+    return data, nil
+    {{end}}
+
+}
+
+func (models *{{ .MessageTypeName}}) Set{{.FieldName}}(data {{.FieldType}}) error {
+    if data == nil {
+        return nil
+    }
+    ds, err := json.Marshal(data)
+    if err != nil {
+        return err
+    }
+    models.{{.FieldName}} = string(ds)
+    {{if .LazyLoad}}
+    models.inner{{.FieldName}} = data
+    {{end}}
+    return nil
+}

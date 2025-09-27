@@ -131,6 +131,10 @@ func (gc *GenContext) GetNowMessage() *protogen.Message {
 	return gc.message
 }
 
+func (gc *GenContext) GetNowMessageTypeName() string {
+	return gc.GetNowMessage().GoIdent.GoName
+}
+
 func (gc *GenContext) WithField(field *protogen.Field) *GenContext {
 	return &GenContext{
 		file:        gc.file,

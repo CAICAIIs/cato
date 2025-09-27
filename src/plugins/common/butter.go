@@ -7,7 +7,6 @@ import (
 type Butter interface {
 	FromExtType() protoreflect.ExtensionType
 	WorkOn(desc protoreflect.Descriptor) bool
-	GetTmplFileName() string
 	Init(value interface{})
 
 	AsTmplPack(ctx *GenContext) interface{}

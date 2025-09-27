@@ -50,7 +50,6 @@ message ColumnDescriptor {
 
 message JsonTransOption {
   bool lazy_load = 1;
-  bool has_raw_field = 2;
 }
 
 message ColumnOption {

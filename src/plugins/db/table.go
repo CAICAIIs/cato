@@ -28,7 +28,7 @@ type TableMessageButterTmplPack struct {
 	Comment         string
 }
 
-func (t *TableMessageButter) GetTmplFileName() string {
+func (t *TableMessageButter) tmplName() string {
 	return "table_name.tmpl"
 }
 
@@ -39,7 +39,7 @@ func (t *TableMessageButter) Init(value interface{}) {
 	}
 
 	t.value = exValue
-	t.tmpl = config.GetTemplate(t.GetTmplFileName())
+	t.tmpl = config.GetTemplate(t.tmplName())
 }
 
 func (t *TableMessageButter) AsTmplPack(ctx *common.GenContext) interface{} {
@@ -48,7 +48,7 @@ func (t *TableMessageButter) AsTmplPack(ctx *common.GenContext) interface{} {
 		return nil
 	}
 	return &TableMessageButterTmplPack{
-		MessageTypeName: ctx.GetNowMessage().GoIdent.GoName,
+		MessageTypeName: ctx.GetNowMessageTypeName(),
 		TableName:       nameOpt.GetSimpleName(),
 		Comment:         t.value.GetComment(),
 	}

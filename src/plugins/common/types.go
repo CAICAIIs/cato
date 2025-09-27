@@ -2,6 +2,7 @@ package common
 
 import (
 	"fmt"
+	"strings"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
 )
@@ -21,7 +22,7 @@ func MapperGoTypeName(ctx *GenContext, field protoreflect.FieldDescriptor) strin
 			typeName = fmt.Sprintf("%s.%s", alias, typeName)
 		}
 		if field.IsList() {
-			return fmt.Sprintf("*%s[]", typeName)
+			return fmt.Sprintf("[]*%s", typeName)
 		}
 		return fmt.Sprintf("*%s", typeName)
 	case protoreflect.EnumKind:
@@ -30,4 +31,12 @@ func MapperGoTypeName(ctx *GenContext, field protoreflect.FieldDescriptor) strin
 	default:
 		return field.Kind().String()
 	}
+}
+
+func UnwrapPointType(typeRaw string) string {
+	firstRune := typeRaw[0]
+	if firstRune != '[' && firstRune != '*' {
+		return typeRaw
+	}
+	return strings.ReplaceAll(typeRaw, "*", "")
 }

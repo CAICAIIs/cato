@@ -9,6 +9,7 @@ import (
 	"google.golang.org/protobuf/reflect/protodesc"
 
 	"github.com/ncuhome/cato/config"
+	"github.com/ncuhome/cato/generated"
 	"github.com/ncuhome/cato/src/plugins/common"
 	"github.com/ncuhome/cato/src/plugins/db"
 )
@@ -43,10 +44,14 @@ func (fp *FieldCheese) borrowTagWriter() io.Writer {
 }
 
 func (fp *FieldCheese) AsTmplPack(ctx *common.GenContext) interface{} {
+	commonType := common.MapperGoTypeName(ctx, fp.field.Desc)
+	if fp.willAsJsonType() {
+		commonType = "string"
+	}
 	pack := &FieldCheesePack{
 		FieldPack: &common.FieldPack{
 			Name:   fp.field.GoName,
-			GoType: common.MapperGoTypeName(ctx, fp.field.Desc),
+			GoType: commonType,
 		},
 		Tags: make([]string, len(fp.tags)),
 	}
@@ -78,4 +83,17 @@ func (fp *FieldCheese) Active(ctx *common.GenContext) (bool, error) {
 		return false, err
 	}
 	return true, nil
+}
+
+func (fp *FieldCheese) willAsJsonType() bool {
+	descriptor := protodesc.ToFieldDescriptorProto(fp.field.Desc)
+	if !proto.HasExtension(descriptor.Options, generated.E_ColumnOpt) {
+		return false
+	}
+	colOpt := proto.GetExtension(descriptor.Options, generated.E_ColumnOpt).(*generated.ColumnOption)
+	jsonTransOpt := colOpt.GetJsonTrans()
+	if jsonTransOpt == nil {
+		return false
+	}
+	return true
 }
