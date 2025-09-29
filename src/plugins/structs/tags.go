@@ -5,6 +5,7 @@ import (
 
 	"github.com/ncuhome/cato/generated"
 	"github.com/ncuhome/cato/src/plugins/common"
+	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
 type FieldTagButter struct {
@@ -30,11 +31,17 @@ func (f *FieldTagButter) Register(ctx *common.GenContext) error {
 	}
 	tags := f.option.GetFieldDefaultTags()
 	result := make([]*common.Tag, len(tags))
-	// todo register tag into ctx
 	// common tags will be load in message-work-on butter
 	// so when load field, default tags will be loaded
 	for index := range tags {
-		result[index] = new(common.Tag)
+		result[index] = &common.Tag{
+			KV: &common.Kv{
+				Key:   tags[index].GetTagName(),
+				Value: tags[index].GetTagValue(),
+			},
+			Mapper: utils.GetWordMapper(tags[index].Mapper),
+		}
 	}
+	ctx.SetScopeTags(result)
 	return nil
 }

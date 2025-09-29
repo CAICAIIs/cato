@@ -18,6 +18,21 @@ func GetStringsMapper(mapper generated.FieldMapper) func(s []string) string {
 	}
 }
 
+func GetWordMapper(mapper generated.FieldMapper) func(s string) string {
+	runner := GetStringsMapper(mapper)
+	return func(s string) string {
+		ss := GetSplitor(s)(s)
+		return runner(ss)
+	}
+}
+
+func GetSplitor(s string) func(s string) []string {
+	if strings.Contains(s, "_") {
+		return SpliSnakeCaseWords
+	}
+	return SplitCamelWords
+}
+
 func buildCamelWords(ss []string) string {
 	for index, s := range ss {
 		sb := new(strings.Builder)

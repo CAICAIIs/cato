@@ -43,7 +43,7 @@ type GenContext struct {
 	catoPackage string
 	namespaces  map[string]*CatoImportPath
 	writers     *ContextWriter
-	scopeTags   []*Kv
+	scopeTags   []*Tag
 }
 
 func (gc *GenContext) WithFile(file *protogen.File) *GenContext {
@@ -80,6 +80,14 @@ func (gc *GenContext) GetWriters() *ContextWriter {
 func (gc *GenContext) SetWriters(writers *ContextWriter) *GenContext {
 	gc.writers = writers
 	return gc
+}
+
+func (gc *GenContext) SetScopeTags(tags []*Tag) {
+	gc.scopeTags = tags
+}
+
+func (gc *GenContext) GetScopeTags() []*Tag {
+	return gc.scopeTags
 }
 
 func (gc *GenContext) CatoPackage() string {
@@ -128,7 +136,7 @@ func (gc *GenContext) WithMessage(message *protogen.Message) *GenContext {
 		namespaces:  gc.namespaces,
 
 		writers:   gc.writers,
-		scopeTags: make([]*Kv, 0),
+		scopeTags: make([]*Tag, 0),
 	}
 }
 

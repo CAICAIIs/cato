@@ -9,6 +9,7 @@ import (
 	"github.com/ncuhome/cato/config"
 	"github.com/ncuhome/cato/generated"
 	"github.com/ncuhome/cato/src/plugins/common"
+	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
 func init() {
@@ -20,7 +21,7 @@ func init() {
 type ColFieldButter struct {
 	value *generated.ColumnOption
 	tmpl  *template.Template
-	tags  map[string]*common.Kv
+	tags  map[string]string
 }
 
 type ColFieldButterTmplPack struct {
@@ -35,7 +36,7 @@ func (c *ColFieldButter) Init(value interface{}) {
 	}
 	c.value = exValue
 	c.tmpl = config.GetTemplate(c.tmplName())
-	c.tags = make(map[string]*common.Kv)
+	c.tags = make(map[string]string)
 }
 
 func (c *ColFieldButter) tmplName() string {
@@ -47,7 +48,7 @@ func (c *ColFieldButter) AsTmplPack(_ *common.GenContext) interface{} {
 	for k, v := range c.tags {
 		tags[index] = common.Kv{
 			Key:   k,
-			Value: v.Value,
+			Value: v,
 		}
 		index++
 	}
@@ -67,10 +68,11 @@ func (c *ColFieldButter) Register(ctx *common.GenContext) error {
 	// self-tags has the highest priority
 	selfTags := c.value.GetTags()
 	for _, tag := range selfTags {
-		c.tags[tag.TagName] = &common.Kv{
-			Key:   tag.TagName,
-			Value: tag.TagValue,
+		t := &common.Tag{
+			KV:     &common.Kv{Key: tag.TagName, Value: tag.TagValue},
+			Mapper: utils.GetWordMapper(tag.Mapper),
 		}
+		c.tags[t.KV.Key] = t.GetTagValue(ctx.GetNowField().GoName)
 	}
 	writers := ctx.GetWriters()
 	// check if the value has a json-trans option

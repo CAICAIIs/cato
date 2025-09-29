@@ -1,6 +1,7 @@
 package plugins
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -75,6 +76,16 @@ func (fp *FieldCheese) Active(ctx *common.GenContext) (bool, error) {
 		if err != nil {
 			return false, err
 		}
+	}
+	// need register tags in ctx
+	for _, scopeTag := range ctx.GetScopeTags() {
+		if scopeTag.KV == nil {
+			continue
+		}
+		tagValue := scopeTag.GetTagValue(fp.field.GoName)
+		tagName := scopeTag.KV.Key
+		target := fp.borrowTagWriter().(*strings.Builder)
+		_, _ = target.WriteString(fmt.Sprintf("%s:\"%s\"", tagName, tagValue))
 	}
 	wr := ctx.GetWriters().FieldWriter()
 	// register into field writer
