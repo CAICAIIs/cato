@@ -1,0 +1,20 @@
+func (model *{{.MessageTypeName}}) GetTime{{.FieldName}}() time.Time {
+    return time.Unix(model.{{.FieldName}}, 0)
+}
+
+func (model *{{.MessageTypeName}}) GetFormatTime{{.FieldName}}() string {
+    return model.GetTime{{.FieldName}}().Format("{{.Format}}")
+}
+
+func (model *{{.MessageTypeName}}) SetTime{{.FieldName}}(t time.Time)  {
+    model.{{.FieldName}} = t.Unix()
+}
+
+func (model *{{.MessageTypeName}}) SetFormatTime{{.FieldName}}(s string) error {
+    t, err := time.Parse("{{.Format}}", s)
+    if err != nil {
+        return err
+    }
+    model.SetTime{{.FieldName}}(t)
+    return nil
+}

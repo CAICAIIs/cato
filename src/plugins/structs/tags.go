@@ -8,6 +8,12 @@ import (
 	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
+func init() {
+	register(func() common.Butter {
+		return new(FieldTagButter)
+	})
+}
+
 type FieldTagButter struct {
 	option *generated.StructOption
 }

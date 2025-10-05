@@ -5,6 +5,8 @@ import (
 	"io"
 	"strings"
 
+	"github.com/ncuhome/cato/src/plugins/structs"
+	"github.com/ncuhome/cato/src/plugins/utils"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
@@ -23,7 +25,7 @@ type FieldCheese struct {
 
 type FieldCheesePack struct {
 	*common.FieldPack
-	Tags []string
+	Tags string
 }
 
 func NewFieldCheese(field *protogen.Field) *FieldCheese {
@@ -55,16 +57,31 @@ func (fp *FieldCheese) AsTmplPack(ctx *common.GenContext) interface{} {
 			Name:   fp.field.GoName,
 			GoType: commonType,
 		},
-		Tags: make([]string, len(fp.tags)),
 	}
+	tags := make([]string, len(fp.tags))
+	tagMap := make(map[string]struct{})
 	for index := range fp.tags {
-		pack.Tags[index] = fp.tags[index].String()
+		raw := fp.tags[index].String()
+		tagKey := utils.GetTagKey(raw)
+		_, hasTag := tagMap[tagKey]
+		if tagKey == "" || hasTag {
+			continue
+		}
+		tags[index] = fp.tags[index].String()
+		tagMap[tagKey] = struct{}{}
 	}
+	pack.Tags = strings.Join(tags, " ")
 	return pack
+}
+
+func (fp *FieldCheese) tmplName() string {
+	return "column_field.tmpl"
 }
 
 func (fp *FieldCheese) Active(ctx *common.GenContext) (bool, error) {
 	butter := db.ChooseButter(fp.field.Desc)
+	butter = append(butter, structs.ChooseButter(fp.field.Desc)...)
+
 	descriptor := protodesc.ToFieldDescriptorProto(fp.field.Desc)
 	for index := range butter {
 		if !proto.HasExtension(descriptor.Options, butter[index].FromExtType()) {
@@ -82,15 +99,17 @@ func (fp *FieldCheese) Active(ctx *common.GenContext) (bool, error) {
 		if scopeTag.KV == nil {
 			continue
 		}
-		tagValue := scopeTag.GetTagValue(fp.field.GoName)
-		tagName := scopeTag.KV.Key
-		target := fp.borrowTagWriter().(*strings.Builder)
-		_, _ = target.WriteString(fmt.Sprintf("%s:\"%s\"", tagName, tagValue))
+		target := fp.borrowTagWriter()
+		tagData := fmt.Sprintf("%s:\"%s\"", scopeTag.KV.Key, scopeTag.GetTagValue(fp.field.GoName))
+		_, err := target.Write([]byte(tagData))
+		if err != nil {
+			return false, err
+		}
 	}
 	wr := ctx.GetWriters().FieldWriter()
 	// register into field writer
 	pack := fp.AsTmplPack(ctx)
-	err := config.GetTemplate(config.CommonFieldTmpl).Execute(wr, pack)
+	err := config.GetTemplate(fp.tmplName()).Execute(wr, pack)
 	if err != nil {
 		return false, err
 	}

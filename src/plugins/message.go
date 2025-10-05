@@ -7,6 +7,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/ncuhome/cato/src/plugins/structs"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
@@ -135,6 +136,7 @@ func (mp *MessageCheese) GenerateContent(ctx *common.GenContext) string {
 func (mp *MessageCheese) Active(ctx *common.GenContext) (bool, error) {
 	descriptor := protodesc.ToDescriptorProto(mp.message.Desc)
 	butter := db.ChooseButter(mp.message.Desc)
+	butter = append(butter, structs.ChooseButter(mp.message.Desc)...)
 	for index := range butter {
 		if !proto.HasExtension(descriptor.Options, butter[index].FromExtType()) {
 			continue

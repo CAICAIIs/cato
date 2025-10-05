@@ -41,6 +41,7 @@ message DBKey {
 
 message TimeOption {
   bool unix_to_time = 1;
+  string time_format = 2;
 }
 
 message ColumnDescriptor {

@@ -1,23 +1,22 @@
-func (models *{{ .MessageTypeName}}) Get{{.FieldName}}() ({{.FieldType}}, error) {
+func (model *{{ .MessageTypeName}}) Get{{.FieldName}}() ({{.FieldType}}, error) {
     {{- if .LazyLoad}}
-    if models.inner{{.FieldName}} != nil {
-        return models.inner{{.FieldName}}, nil
+    if model.inner{{.FieldName}} != nil {
+        return model.inner{{.FieldName}}, nil
     }
     {{- end}}
     data := new({{.FieldTypeRaw}})
-    if err := json.Unmarshal([]byte(models.{{.FieldName}}), data); err != nil {
+    if err := json.Unmarshal([]byte(model.{{.FieldName}}), data); err != nil {
         return nil, err
     }
     {{- if .LazyLoad}}
-    models.inner{{.FieldName}} = data
-    return models.inner{{.FieldName}}, nil
+    model.inner{{.FieldName}} = data
+    return model.inner{{.FieldName}}, nil
     {{else}}
     return data, nil
     {{- end}}
-
 }
 
-func (models *{{ .MessageTypeName}}) Set{{.FieldName}}(data {{.FieldType}}) error {
+func (model *{{ .MessageTypeName}}) Set{{.FieldName}}(data {{.FieldType}}) error {
     if data == nil {
         return nil
     }
@@ -25,9 +24,9 @@ func (models *{{ .MessageTypeName}}) Set{{.FieldName}}(data {{.FieldType}}) erro
     if err != nil {
         return err
     }
-    models.{{.FieldName}} = string(ds)
+    model.{{.FieldName}} = string(ds)
     {{- if .LazyLoad}}
-    models.inner{{.FieldName}} = data
+    model.inner{{.FieldName}} = data
     {{- end}}
     return nil
 }

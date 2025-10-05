@@ -26,13 +26,14 @@ var templateNames = []string{
 	"models.tmpl",
 	"table_name.tmpl",
 	"json_trans.tmpl",
+	"time_format.tmpl",
 }
 
 func init() {
 	templates[CommonFieldTmpl], _ = template.New(CommonFieldTmpl).
 		Parse(`{{ .Name }} {{ .GoType }} `)
 	templates[CommonTagTmpl], _ = template.New(CommonTagTmpl).
-		Parse(`{{range .}}{{.Key}}:"{{.Value}}" {{end}}"`)
+		Parse(`{{range .}}{{.Key}}:"{{.Value}}"{{end}}`)
 
 	for _, name := range templateNames {
 		path := filepath.Join(TmplPath, name)

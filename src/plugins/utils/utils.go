@@ -17,3 +17,12 @@ func GetGoImportName(importPath protogen.GoImportPath) string {
 func GetGoFilePath(importPath protogen.GoImportPath) string {
 	return strings.Trim(importPath.String(), "\"")
 }
+
+func GetTagKey(tagRaw string) string {
+	patterns := strings.Split(tagRaw, ":")
+	// invalid tag format
+	if len(patterns) < 2 {
+		return ""
+	}
+	return patterns[0]
+}

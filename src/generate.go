@@ -30,6 +30,9 @@ func (g *CatoGenerator) Generate(resp *pluginpb.CodeGeneratorResponse) *pluginpb
 	for _, file := range genOption.Files {
 		fc := plugins.NewFileCheese(file)
 		ctx := fc.RegisterContext(new(common.GenContext))
+		if ctx.GetCatoPackage() == "" {
+			continue
+		}
 		for _, message := range file.Messages {
 			mc := plugins.NewMessageCheese(message)
 			mctx := mc.RegisterContext(ctx)

@@ -67,6 +67,9 @@ func (c *ColFieldButter) WorkOn(desc protoreflect.Descriptor) bool {
 func (c *ColFieldButter) Register(ctx *common.GenContext) error {
 	// self-tags has the highest priority
 	selfTags := c.value.GetTags()
+	if len(selfTags) == 0 {
+		return nil
+	}
 	for _, tag := range selfTags {
 		t := &common.Tag{
 			KV:     &common.Kv{Key: tag.TagName, Value: tag.TagValue},
