@@ -1,0 +1,18 @@
+func (b *basicRepo) DeleteBy{{.KeyNameCombine}}(ctx context.Context, {{.ParamRaw}}) error {
+	container := &{{.ModelType}}{
+	    {{- range .Params}}
+	    {{.FieldName}}: {{.ParamName}}
+	    {{- end}}
+	}
+	cond := squirrel.Eq{
+	    {{- range .Params}}
+	    container.GetCol{{.FieldName}}(): {{.ParamName}}
+	    {{- end}}
+	}
+	sql, args, err := squirrel.Delete(container.TableName()).Where(cond).ToSql()
+	if err != nil {
+		return err
+	}
+	_, err = b.Exec(ctx, sql, args)
+	return err
+}

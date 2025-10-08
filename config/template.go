@@ -20,6 +20,18 @@ const (
 	FieldTmpl       = "field.tmpl"
 	ModelTmpl       = "model.tmpl"
 	FileTmpl        = "file.tmpl"
+	TableColTmpl    = "table_col.tmpl"
+
+	RdbTmpl       = "rdb.tmpl"
+	RdbDeleteTmpl = "rdb_delete.tmpl"
+	RdbFetchTmpl  = "rdb_fetch.tmpl"
+	RdbUpdateTmpl = "rdb_update.tmpl"
+	RdbInsertTmpl = "rdb_insert.tmpl"
+
+	RepoDeleteTmpl = "repo_delete.tmpl"
+	RepoFetchTmpl  = "repo_fetch.tmpl"
+	RepoUpdateTmpl = "repo_update.tmpl"
+	RepoInsertTmpl = "repo_insert.tmpl"
 )
 
 var (
@@ -30,9 +42,6 @@ var (
 )
 
 var templateNames = []string{
-
-	// todo: need treat this name as const
-
 	ColArrivalTmpl,
 	TableNameTmpl,
 	TableExtendTmpl,
@@ -42,6 +51,18 @@ var templateNames = []string{
 	TagTmpl,
 	ModelTmpl,
 	FileTmpl,
+	TableColTmpl,
+
+	RepoDeleteTmpl,
+	RepoFetchTmpl,
+	RepoUpdateTmpl,
+	RepoInsertTmpl,
+
+	RdbTmpl,
+	RdbDeleteTmpl,
+	RdbFetchTmpl,
+	RdbUpdateTmpl,
+	RdbInsertTmpl,
 }
 
 func init() {

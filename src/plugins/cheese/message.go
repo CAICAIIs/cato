@@ -12,23 +12,24 @@ type MessageCheese struct {
 	fields  []*strings.Builder
 	extra   []*strings.Builder
 	repo    []*strings.Builder
+	rdb     []*strings.Builder
 	imports []*strings.Builder
 
-	scopeTags    map[string]*models.Tag
-	scopeCols    map[string]*models.Col
-	scopeImports map[string]*models.Import
+	scopeTags map[string]*models.Tag
+	scopeCols map[string]*models.Col
+	scopeKeys map[string]*models.Key
 }
 
 func NewMessageCheese() *MessageCheese {
 	return &MessageCheese{
-		methods:      make([]*strings.Builder, 0),
-		fields:       make([]*strings.Builder, 0),
-		extra:        make([]*strings.Builder, 0),
-		repo:         make([]*strings.Builder, 0),
-		imports:      make([]*strings.Builder, 0),
-		scopeTags:    make(map[string]*models.Tag),
-		scopeCols:    make(map[string]*models.Col),
-		scopeImports: make(map[string]*models.Import),
+		methods:   make([]*strings.Builder, 0),
+		fields:    make([]*strings.Builder, 0),
+		extra:     make([]*strings.Builder, 0),
+		repo:      make([]*strings.Builder, 0),
+		rdb:       make([]*strings.Builder, 0),
+		imports:   make([]*strings.Builder, 0),
+		scopeTags: make(map[string]*models.Tag),
+		scopeCols: make(map[string]*models.Col),
 	}
 }
 
@@ -37,9 +38,25 @@ func (mc *MessageCheese) BorrowImportWriter() io.Writer {
 	return mc.imports[len(mc.imports)-1]
 }
 
+func (mc *MessageCheese) GetImports() []string {
+	ss := make([]string, len(mc.imports))
+	for index := range mc.imports {
+		ss[index] = mc.imports[index].String()
+	}
+	return ss
+}
+
 func (mc *MessageCheese) BorrowMethodsWriter() io.Writer {
 	mc.methods = append(mc.methods, new(strings.Builder))
 	return mc.methods[len(mc.methods)-1]
+}
+
+func (mc *MessageCheese) GetMethods() []string {
+	ss := make([]string, len(mc.methods))
+	for index := range mc.methods {
+		ss[index] = mc.methods[index].String()
+	}
+	return ss
 }
 
 func (mc *MessageCheese) BorrowExtraWriter() io.Writer {
@@ -47,14 +64,43 @@ func (mc *MessageCheese) BorrowExtraWriter() io.Writer {
 	return mc.extra[len(mc.extra)-1]
 }
 
+func (mc *MessageCheese) GetExtra() []string {
+	ss := make([]string, len(mc.extra))
+	for index := range mc.extra {
+		ss[index] = mc.extra[index].String()
+	}
+	return ss
+}
+
 func (mc *MessageCheese) BorrowRepoWriter() io.Writer {
 	mc.repo = append(mc.repo, new(strings.Builder))
 	return mc.repo[len(mc.repo)-1]
 }
 
+func (mc *MessageCheese) BorrowRdbWriter() io.Writer {
+	mc.rdb = append(mc.rdb, new(strings.Builder))
+	return mc.rdb[len(mc.rdb)-1]
+}
+
+func (mc *MessageCheese) GetRepo() []string {
+	ss := make([]string, len(mc.repo))
+	for index := range mc.repo {
+		ss[index] = mc.repo[index].String()
+	}
+	return ss
+}
+
 func (mc *MessageCheese) BorrowFieldWriter() io.Writer {
 	mc.fields = append(mc.fields, new(strings.Builder))
 	return mc.fields[len(mc.fields)-1]
+}
+
+func (mc *MessageCheese) GetField() []string {
+	ss := make([]string, len(mc.fields))
+	for index := range mc.fields {
+		ss[index] = mc.fields[index].String()
+	}
+	return ss
 }
 
 func (mc *MessageCheese) AddScopeCol(col *models.Col) {
@@ -72,6 +118,18 @@ func (mc *MessageCheese) AddScopeTag(tag *models.Tag) {
 	mc.scopeTags[tag.KV.Key] = tag
 }
 
+func (mc *MessageCheese) AddScopeKey(key *models.Key) {
+	if key == nil || len(key.Fields) == 0 {
+		return
+	}
+	_, ok := mc.scopeKeys[key.KeyName]
+	if !ok {
+		mc.scopeKeys[key.KeyName] = key
+	} else {
+		mc.scopeKeys[key.KeyName].Fields = append(mc.scopeKeys[key.KeyName].Fields, key.Fields...)
+	}
+}
+
 func (mc *MessageCheese) GetScopeTags() []*models.Tag {
 	tags, index := make([]*models.Tag, len(mc.scopeTags)), 0
 	for _, tag := range mc.scopeTags {
@@ -81,4 +139,20 @@ func (mc *MessageCheese) GetScopeTags() []*models.Tag {
 	return tags
 }
 
-func (mc *MessageCheese) AsBasicTmpl() []*models.Col {}
+func (mc *MessageCheese) GetScopeCols() []*models.Col {
+	cols, index := make([]*models.Col, len(mc.scopeCols)), 0
+	for _, col := range mc.scopeCols {
+		cols[index] = col
+		index++
+	}
+	return cols
+}
+
+func (mc *MessageCheese) GetScopeKeys() []*models.Key {
+	keys, index := make([]*models.Key, 0), 0
+	for _, key := range mc.scopeKeys {
+		keys[index] = key
+		index++
+	}
+	return keys
+}

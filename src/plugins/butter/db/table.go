@@ -3,9 +3,10 @@ package db
 import (
 	"log"
 
+	"google.golang.org/protobuf/reflect/protoreflect"
+
 	"github.com/ncuhome/cato/src/plugins/butter"
 	"github.com/ncuhome/cato/src/plugins/models/packs"
-	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/ncuhome/cato/config"
 	"github.com/ncuhome/cato/generated"
@@ -13,7 +14,7 @@ import (
 )
 
 func init() {
-	register(func() butter.Butter {
+	butter.Register(func() butter.Butter {
 		return new(TableBasicButter)
 	})
 }
@@ -55,15 +56,6 @@ func (t *TableBasicButter) Register(ctx *common.GenContext) error {
 	// set extension
 	mc := ctx.GetNowMessageContainer()
 	_, err := mc.BorrowFieldWriter().Write([]byte("ext *extension"))
-	if err != nil {
-		return err
-	}
-	// write extension file
-	extraPack := &packs.TableExtendTmplPack{
-		PackageName: ctx.GetFilePackage(),
-	}
-	extendTmpl := config.GetTemplate(config.TableExtendTmpl)
-	err = extendTmpl.Execute(mc.BorrowExtraWriter(), extraPack)
 	if err != nil {
 		return err
 	}

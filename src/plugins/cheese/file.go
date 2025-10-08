@@ -4,9 +4,10 @@ import (
 	"io"
 	"strings"
 
+	"google.golang.org/protobuf/compiler/protogen"
+
 	"github.com/ncuhome/cato/src/plugins/models"
 	"github.com/ncuhome/cato/src/plugins/utils"
-	"google.golang.org/protobuf/compiler/protogen"
 )
 
 type FileCheese struct {

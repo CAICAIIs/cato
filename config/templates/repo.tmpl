@@ -1,0 +1,13 @@
+package {{.RepoPackageName}}
+
+import (
+	"context"
+
+	{{.ModelPackageAlias}} "{{.ModelPackage}}"
+)
+
+type basic interface {
+	{{- range .RepoFuncs}}
+	{{.}}
+	{{-end}}
+}

@@ -1,16 +1,14 @@
 package src
 
 import (
-	"errors"
 	"go/format"
 	"log"
-	"os"
-	"path/filepath"
+
+	"google.golang.org/protobuf/compiler/protogen"
+	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/ncuhome/cato/src/plugins/common"
 	"github.com/ncuhome/cato/src/plugins/flags"
-	"google.golang.org/protobuf/compiler/protogen"
-	"google.golang.org/protobuf/types/pluginpb"
 
 	"github.com/ncuhome/cato/src/plugins"
 )
@@ -42,31 +40,12 @@ func (g *CatoGenerator) Generate(resp *pluginpb.CodeGeneratorResponse) *pluginpb
 		}
 		for _, message := range file.Messages {
 			// init message scope cheese
-			mc := plugins.NewMessageCheese(message)
+			mc := plugins.NewMessageWorker(message)
 			mctx := mc.RegisterContext(ctx)
 			ok, err := mc.Active(mctx)
 			if err != nil || !ok {
 				log.Fatalf("[-] cato could not activate message %s: %v\n", mctx.GetNowMessageTypeName(), err)
 			}
-			// write file content
-			fileName := filepath.Join(mctx.CatoPackage(), mc.GenerateFile())
-			content := mc.GenerateContent(mctx)
-			resp.File = append(resp.File, g.outputContent(fileName, content))
-			// check has extra file
-			outDir, ok := g.params[flags.FlagExtOutDir]
-			if !mc.HasExtra() || !ok {
-				continue
-			}
-			// write extra file content
-			extraFileName := filepath.Join(mctx.GetCatoPackage(), "extension.go")
-			_, err = os.Stat(filepath.Join(outDir, extraFileName))
-			// check extra file exists
-			if !errors.Is(err, os.ErrNotExist) {
-				continue
-			}
-			extraFileContent := mc.GenerateExtraContent(mctx)
-			resp.File = append(resp.File, g.outputContent(extraFileName, extraFileContent))
-			// write repo file content
 
 		}
 	}

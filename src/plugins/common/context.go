@@ -1,14 +1,16 @@
 package common
 
 import (
-	"github.com/ncuhome/cato/src/plugins/cheese"
-	"github.com/ncuhome/cato/src/plugins/utils"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/ncuhome/cato/src/plugins/cheese"
+	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
 type GenContext struct {
-	catoPackage   string
+	catoPackage string
+
 	file          *protogen.File
 	fileContainer *cheese.FileCheese
 

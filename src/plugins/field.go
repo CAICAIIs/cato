@@ -5,19 +5,17 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ncuhome/cato/src/plugins/butter/db"
-	"github.com/ncuhome/cato/src/plugins/butter/structs"
-	"github.com/ncuhome/cato/src/plugins/cheese"
-	"github.com/ncuhome/cato/src/plugins/models"
-	"github.com/ncuhome/cato/src/plugins/models/packs"
-	"github.com/ncuhome/cato/src/plugins/utils"
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protodesc"
 
 	"github.com/ncuhome/cato/config"
-	"github.com/ncuhome/cato/generated"
+	"github.com/ncuhome/cato/src/plugins/butter"
+	"github.com/ncuhome/cato/src/plugins/cheese"
 	"github.com/ncuhome/cato/src/plugins/common"
+	"github.com/ncuhome/cato/src/plugins/models"
+	"github.com/ncuhome/cato/src/plugins/models/packs"
+	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
 type FieldWorker struct {
@@ -33,56 +31,50 @@ func NewFieldCheese(field *protogen.Field) *FieldWorker {
 	}
 }
 
-func (fp *FieldWorker) RegisterContext(gc *common.GenContext) *common.GenContext {
+func (fw *FieldWorker) RegisterContext(gc *common.GenContext) *common.GenContext {
 	fc := cheese.NewFieldCheese()
-	ctx := gc.WithField(fp.field, fc)
+	ctx := gc.WithField(fw.field, fc)
 	return ctx
 }
 
-func (fp *FieldWorker) borrowTagWriter() io.Writer {
-	fp.tags = append(fp.tags, new(strings.Builder))
-	return fp.tags[len(fp.tags)-1]
+func (fw *FieldWorker) borrowTagWriter() io.Writer {
+	fw.tags = append(fw.tags, new(strings.Builder))
+	return fw.tags[len(fw.tags)-1]
 }
 
-func (fp *FieldWorker) AsTmplPack(ctx *common.GenContext) interface{} {
-	commonType := common.MapperGoTypeName(ctx, fp.field.Desc)
-	if fp.willAsJsonType() {
-		commonType = "string"
-	}
+func (fw *FieldWorker) AsTmplPack(fieldType string) *packs.FieldPack {
 	pack := &packs.FieldPack{
 		Field: &models.Field{
-			Name:   fp.field.GoName,
-			GoType: commonType,
+			Name:   fw.field.GoName,
+			GoType: fieldType,
 		},
 	}
-	tags := make([]string, len(fp.tags))
+	tags := make([]string, len(fw.tags))
 	tagMap := make(map[string]struct{})
-	for index := range fp.tags {
-		raw := fp.tags[index].String()
+	for index := range fw.tags {
+		raw := fw.tags[index].String()
 		tagKey := utils.GetTagKey(raw)
 		_, hasTag := tagMap[tagKey]
 		if tagKey == "" || hasTag {
 			continue
 		}
-		tags[index] = fp.tags[index].String()
+		tags[index] = fw.tags[index].String()
 		tagMap[tagKey] = struct{}{}
 	}
 	pack.Tags = strings.Join(tags, " ")
 	return pack
 }
 
-func (fp *FieldWorker) Active(ctx *common.GenContext) (bool, error) {
-	butter := db.ChooseButter(fp.field.Desc)
-	butter = append(butter, structs.ChooseButter(fp.field.Desc)...)
-
-	descriptor := protodesc.ToFieldDescriptorProto(fp.field.Desc)
-	for index := range butter {
-		if !proto.HasExtension(descriptor.Options, butter[index].FromExtType()) {
+func (fw *FieldWorker) Active(ctx *common.GenContext) (bool, error) {
+	butters := butter.ChooseButter(fw.field.Desc)
+	descriptor := protodesc.ToFieldDescriptorProto(fw.field.Desc)
+	for index := range butters {
+		if !proto.HasExtension(descriptor.Options, butters[index].FromExtType()) {
 			continue
 		}
-		value := proto.GetExtension(descriptor.Options, butter[index].FromExtType())
-		butter[index].Init(value)
-		err := butter[index].Register(ctx)
+		value := proto.GetExtension(descriptor.Options, butters[index].FromExtType())
+		butters[index].Init(value)
+		err := butters[index].Register(ctx)
 		if err != nil {
 			return false, err
 		}
@@ -92,32 +84,23 @@ func (fp *FieldWorker) Active(ctx *common.GenContext) (bool, error) {
 		if scopeTag.KV == nil {
 			continue
 		}
-		target := fp.borrowTagWriter()
-		tagData := fmt.Sprintf("%s:\"%s\"", scopeTag.KV.Key, scopeTag.GetTagValue(fp.field.GoName))
+		target := fw.borrowTagWriter()
+		tagData := fmt.Sprintf("%s:\"%s\"", scopeTag.KV.Key, scopeTag.GetTagValue(fw.field.GoName))
 		_, err := target.Write([]byte(tagData))
 		if err != nil {
 			return false, err
 		}
 	}
-	wr := ctx.GetNowMessageContainer().BorrowFieldWriter()
-	// register into field writer
-	pack := fp.AsTmplPack(ctx)
-	err := config.GetTemplate(config.FieldTmpl).Execute(wr, pack)
-	if err != nil {
-		return false, err
-	}
 	return true, nil
 }
 
-func (fp *FieldWorker) willAsJsonType() bool {
-	descriptor := protodesc.ToFieldDescriptorProto(fp.field.Desc)
-	if !proto.HasExtension(descriptor.Options, generated.E_ColumnOpt) {
-		return false
+func (fw *FieldWorker) Complete(ctx *common.GenContext) error {
+	wr := ctx.GetNowMessageContainer().BorrowFieldWriter()
+	// register into field writer
+	fieldType := common.MapperGoTypeName(ctx, fw.field.Desc)
+	if ctx.GetNowFieldContainer().IsJsonTrans() {
+		fieldType = "string"
 	}
-	colOpt := proto.GetExtension(descriptor.Options, generated.E_ColumnOpt).(*generated.ColumnOption)
-	jsonTransOpt := colOpt.GetJsonTrans()
-	if jsonTransOpt == nil {
-		return false
-	}
-	return true
+	pack := fw.AsTmplPack(fieldType)
+	return config.GetTemplate(config.FieldTmpl).Execute(wr, pack)
 }

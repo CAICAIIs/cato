@@ -1,22 +1,25 @@
 package plugins
 
 import (
-	"github.com/ncuhome/cato/src/plugins/common"
 	"google.golang.org/protobuf/compiler/protogen"
+
+	"github.com/ncuhome/cato/src/plugins/cheese"
+	"github.com/ncuhome/cato/src/plugins/common"
 )
 
-type FileCheese struct {
+type FileWorker struct {
 	file    *protogen.File
 	context *common.GenContext
 }
 
-func NewFileCheese(file *protogen.File) *FileCheese {
-	fc := new(FileCheese)
+func NewFileCheese(file *protogen.File) *FileWorker {
+	fc := new(FileWorker)
 	fc.file = file
 	return fc
 }
 
-func (fc *FileCheese) RegisterContext(gc *common.GenContext) *common.GenContext {
-	ctx := gc.WithFile(fc.file)
+func (fc *FileWorker) RegisterContext(gc *common.GenContext) *common.GenContext {
+	f := cheese.NewFileCheese(fc.file)
+	ctx := gc.WithFile(fc.file, f)
 	return ctx
 }

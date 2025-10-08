@@ -3,17 +3,18 @@ package db
 import (
 	"fmt"
 
+	"google.golang.org/protobuf/reflect/protoreflect"
+
 	"github.com/ncuhome/cato/config"
 	"github.com/ncuhome/cato/generated"
 	"github.com/ncuhome/cato/src/plugins/butter"
 	"github.com/ncuhome/cato/src/plugins/common"
 	"github.com/ncuhome/cato/src/plugins/models"
 	"github.com/ncuhome/cato/src/plugins/models/packs"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 func init() {
-	register(func() butter.Butter {
+	butter.Register(func() butter.Butter {
 		return new(JsonTransButter)
 	})
 }
@@ -44,6 +45,8 @@ func (j *JsonTransButter) Register(ctx *common.GenContext) error {
 		return nil
 	}
 	transOpt := j.value.GetJsonTrans()
+	// set json trans flag
+	ctx.GetNowFieldContainer().SetJsonTrans(true)
 
 	nowField := ctx.GetNowField()
 	fieldType := common.MapperGoTypeName(ctx, nowField.Desc)

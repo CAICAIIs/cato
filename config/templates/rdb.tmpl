@@ -1,0 +1,18 @@
+package {{.RdbRepoPackage}}
+
+import (
+	"context"
+
+	"github.com/Masterminds/squirrel"
+
+	{{.ModelPackageAlias}} "{{.ModelPackage}}"
+)
+
+type basicRepo struct {
+	engine
+}
+
+
+{{-range .RepoFuncs}}
+{{.}}
+{{-end}}

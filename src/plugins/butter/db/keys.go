@@ -1,11 +1,19 @@
 package db
 
 import (
+	"google.golang.org/protobuf/reflect/protoreflect"
+
 	"github.com/ncuhome/cato/generated"
+	"github.com/ncuhome/cato/src/plugins/butter"
 	"github.com/ncuhome/cato/src/plugins/common"
 	"github.com/ncuhome/cato/src/plugins/models"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
+
+func init() {
+	butter.Register(func() butter.Butter {
+		return new(FieldKeysButter)
+	})
+}
 
 type FieldKeysButter struct {
 	values []*generated.DBKey
@@ -36,12 +44,13 @@ func (f *FieldKeysButter) Register(ctx *common.GenContext) error {
 		Name:   fieldName,
 		GoType: fieldType,
 	}
+	mc := ctx.GetNowMessageContainer()
 	for index := range f.values {
 		key := &models.Key{
 			Fields:  []*models.Field{field},
 			KeyType: f.values[index].KeyType,
 		}
-		ctx.GetScope().AddScopeKey(key)
+		mc.AddScopeKey(key)
 	}
 	return nil
 }

@@ -1,0 +1,27 @@
+func (model *{{.MessageTypeName}}) AllCols() []string {
+    return []string{
+        {{- range .Cols}}
+        "{{.ColName}}",
+        {{- end}}
+    }
+}
+
+func (model *{{.MessageTypeName}}) ToMap() map[string]interface{} {
+    return map[string]interface{}{
+        {{- range .Cols}}
+        model.GetCol{{.Name}}() : model.{{Name}}
+        {{- end}}
+    }
+}
+
+func (model *{{.MessageTypeName}}) FromMap(data map[string]interface{}) {
+    var (
+        ok bool
+    )
+    {{- range .Cols}}
+    _, ok = data[model.GetCol{{.Name}}()]
+    if ok {
+        model.{{.Name}} = data[model.GetCol{{.Name}}()].({{.GoType}})
+    }
+    {{- end}}
+}

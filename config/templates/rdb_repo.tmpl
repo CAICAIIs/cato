@@ -1,0 +1,40 @@
+package {{.RdbRepoPackage}}
+
+import (
+	"context"
+
+	{{.ModelPackageAlias}} "{{.ModelPackage}}"
+	{{.RepoPackageAlias}} "{{.RepoPackage}}"
+)
+
+type engine struct{}
+
+func (rdb *engine) FetchOne(ctx context.Context, table, sql string, args ...interface{}) ({{.FetchOneReturnType}}, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (rdb *engine) FetchAll(ctx context.Context, table, sql string, args ...interface{}) ({{.FetchAllReturnType}}, error) {
+	panic("implement me")
+}
+
+func (rdb *engine) Exec(ctx context.Context, table, sql string, args ...interface{}) (int64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (rdb *engine) Count(ctx context.Context, table, sql string, args ...interface{}) (int64, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
+type {{.RepoName}} struct {
+	engine
+	basicRepo
+}
+
+func New{{.RepoName}}() {{.RepoPackageAlias}}.Repo {
+	eg := engine{}
+	basic := basicRepo{engine: eg}
+	return &{{.RepoName}}{basicRepo: basic, engine: eg}
+}

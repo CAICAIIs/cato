@@ -1,9 +1,10 @@
 package structs
 
 import (
+	"google.golang.org/protobuf/reflect/protoreflect"
+
 	"github.com/ncuhome/cato/src/plugins/butter"
 	"github.com/ncuhome/cato/src/plugins/models"
-	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/ncuhome/cato/generated"
 	"github.com/ncuhome/cato/src/plugins/common"
@@ -11,7 +12,7 @@ import (
 )
 
 func init() {
-	register(func() butter.Butter {
+	butter.Register(func() butter.Butter {
 		return new(FieldTagButter)
 	})
 }

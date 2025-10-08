@@ -3,16 +3,17 @@ package db
 import (
 	"time"
 
+	"google.golang.org/protobuf/reflect/protoreflect"
+
 	"github.com/ncuhome/cato/config"
 	"github.com/ncuhome/cato/generated"
 	"github.com/ncuhome/cato/src/plugins/butter"
 	"github.com/ncuhome/cato/src/plugins/common"
 	"github.com/ncuhome/cato/src/plugins/models/packs"
-	"google.golang.org/protobuf/reflect/protoreflect"
 )
 
 func init() {
-	register(func() butter.Butter {
+	butter.Register(func() butter.Butter {
 		return new(TimeOptionButter)
 	})
 }

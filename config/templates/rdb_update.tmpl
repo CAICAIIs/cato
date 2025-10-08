@@ -1,0 +1,18 @@
+func (b *basicRepo) UpdateBy{{.KeyNameCombine}}(ctx context.Context, data map[string]interface{}, {{.ParamRaw}}) error {
+	container := &{{.ModelType}}{
+	    {{- range .Params}}
+	    {{.FieldName}}: {{.ParamName}}
+	    {{- end}}
+	}
+	cond := squirrel.Eq{
+	    {{- range .Params}}
+	    container.GetCol{{.FieldName}}(): {{.ParamName}}
+	    {{- end}}
+	}
+	sql, args, err := squirrel.Update(container.TableName()).SetMap(data).Where(cond).ToSql()
+	if err != nil {
+    		return err
+    }
+    _, err = b.Exec(ctx, sql, args)
+    return err
+}
