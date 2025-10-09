@@ -28,7 +28,7 @@ func GetWordMapper(mapper generated.FieldMapper) func(s string) string {
 
 func GetSplitor(s string) func(s string) []string {
 	if strings.Contains(s, "_") {
-		return SpliSnakeCaseWords
+		return SplitSnakeCaseWords
 	}
 	return SplitCamelWords
 }
@@ -66,6 +66,6 @@ func SplitCamelWords(s string) []string {
 	return words
 }
 
-func SpliSnakeCaseWords(s string) []string {
+func SplitSnakeCaseWords(s string) []string {
 	return strings.Split(s, "_")
 }
