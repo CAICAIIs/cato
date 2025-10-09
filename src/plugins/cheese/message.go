@@ -90,6 +90,14 @@ func (mc *MessageCheese) GetRepo() []string {
 	return ss
 }
 
+func (mc *MessageCheese) GetRdb() []string {
+	ss := make([]string, len(mc.rdb))
+	for index := range mc.rdb {
+		ss[index] = mc.rdb[index].String()
+	}
+	return ss
+}
+
 func (mc *MessageCheese) BorrowFieldWriter() io.Writer {
 	mc.fields = append(mc.fields, new(strings.Builder))
 	return mc.fields[len(mc.fields)-1]

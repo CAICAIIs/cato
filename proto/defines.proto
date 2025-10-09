@@ -7,4 +7,5 @@ option go_package = "github.com/ncuhome/cato/generated";
 message CatoOptions {
   string cato_package = 1;
   string repo_package = 2;
+  string rdb_repo_package = 3;
 }

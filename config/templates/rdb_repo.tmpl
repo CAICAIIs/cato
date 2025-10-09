@@ -2,9 +2,12 @@ package {{.RdbRepoPackage}}
 
 import (
 	"context"
-
+    {{-if .IsModelAnotherPackage}}
 	{{.ModelPackageAlias}} "{{.ModelPackage}}"
+	{{- end}}
+	{{-if .IsRepoAnotherPackage}}
 	{{.RepoPackageAlias}} "{{.RepoPackage}}"
+	{{- end}}
 )
 
 type engine struct{}
@@ -28,13 +31,13 @@ func (rdb *engine) Count(ctx context.Context, table, sql string, args ...interfa
 	panic("implement me")
 }
 
-type {{.RepoName}} struct {
+type {{.ModelType}}Repo struct {
 	engine
 	basicRepo
 }
 
-func New{{.RepoName}}() {{.RepoPackageAlias}}.Repo {
+func New{{.ModelType}}Repo() {{.RepoPackageAlias}}.Repo {
 	eg := engine{}
 	basic := basicRepo{engine: eg}
-	return &{{.RepoName}}{basicRepo: basic, engine: eg}
+	return &{{.ModelType}}Repo{basicRepo: basic, engine: eg}
 }

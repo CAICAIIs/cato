@@ -5,7 +5,9 @@ import (
 
 	"github.com/Masterminds/squirrel"
 
+    {{-if .IsModelAnotherPackage}}
 	{{.ModelPackageAlias}} "{{.ModelPackage}}"
+	{{-end}}
 )
 
 type basicRepo struct {
@@ -13,6 +15,6 @@ type basicRepo struct {
 }
 
 
-{{-range .RepoFuncs}}
+{{-range .RdbRepoFuncs}}
 {{.}}
 {{-end}}

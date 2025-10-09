@@ -7,10 +7,9 @@ import (
 	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/types/pluginpb"
 
+	"github.com/ncuhome/cato/src/plugins"
 	"github.com/ncuhome/cato/src/plugins/common"
 	"github.com/ncuhome/cato/src/plugins/flags"
-
-	"github.com/ncuhome/cato/src/plugins"
 )
 
 type CatoGenerator struct {
@@ -46,7 +45,6 @@ func (g *CatoGenerator) Generate(resp *pluginpb.CodeGeneratorResponse) *pluginpb
 			if err != nil || !ok {
 				log.Fatalf("[-] cato could not activate message %s: %v\n", mctx.GetNowMessageTypeName(), err)
 			}
-
 		}
 	}
 	return nil

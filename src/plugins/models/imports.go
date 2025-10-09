@@ -18,6 +18,17 @@ func (cip *Import) GetPath() string {
 	return value
 }
 
+func (cip *Import) IsSame(i *Import) bool {
+	if i == nil {
+		return cip == nil
+	}
+	return cip.ImportPath == i.ImportPath
+}
+
+func (cip *Import) IsEmpty() bool {
+	return cip.ImportPath == ""
+}
+
 func (cip *Import) Init(importPath string) *Import {
 	cip.ImportPath = importPath
 	pattern := strings.Split(importPath, "/")

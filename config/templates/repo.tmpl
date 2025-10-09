@@ -3,11 +3,13 @@ package {{.RepoPackageName}}
 import (
 	"context"
 
-	{{.ModelPackageAlias}} "{{.ModelPackage}}"
+	{{-if .IsModelAnotherPackage}}
+    {{.ModelPackageAlias}} "{{.ModelPackage}}"
+    {{-end}}
 )
 
 type basic interface {
 	{{- range .RepoFuncs}}
 	{{.}}
-	{{-end}}
+	{{- end}}
 }

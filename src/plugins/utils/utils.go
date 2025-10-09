@@ -3,13 +3,13 @@ package utils
 import (
 	"strings"
 
-	"github.com/ncuhome/cato/generated"
-	"google.golang.org/protobuf/compiler/protogen"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
+
+	"github.com/ncuhome/cato/generated"
 )
 
-func GetGoImportName(importPath protogen.GoImportPath) string {
+func GetGoPackageName(importPath string) string {
 	patterns := strings.Split(GetGoFilePath(importPath), "/")
 	if len(patterns) == 0 || patterns[0] == "." {
 		return ""
@@ -17,8 +17,8 @@ func GetGoImportName(importPath protogen.GoImportPath) string {
 	return patterns[len(patterns)-1]
 }
 
-func GetGoFilePath(importPath protogen.GoImportPath) string {
-	return strings.Trim(importPath.String(), "\"")
+func GetGoFilePath(importPath string) string {
+	return strings.Trim(importPath, "\"")
 }
 
 func GetTagKey(tagRaw string) string {

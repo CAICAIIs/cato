@@ -1,9 +1,4 @@
-func (b *basicRepo) FindBy{{.KeyNameCombine}}(ctx context.Context, {{.ParamRaw}}) ({{.FetchReturnType}}, error) {
-	container := &{{.ModelType}}{
-	    {{- range .Params}}
-	    {{.FieldName}}: {{.ParamName}}
-	    {{- end}}
-	}
+func (b *basicRepo) FindBy{{.KeyNameCombine}}(ctx context.Context, container *{{.ModelType}}) ({{.FetchReturnType}}, error) {
 	cond := squirrel.Eq{
 	    {{- range .Params}}
 	    container.GetCol{{.FieldName}}(): {{.ParamName}}

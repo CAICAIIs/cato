@@ -5,12 +5,9 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/ncuhome/cato/src/plugins/cheese"
-	"github.com/ncuhome/cato/src/plugins/utils"
 )
 
 type GenContext struct {
-	catoPackage string
-
 	file          *protogen.File
 	fileContainer *cheese.FileCheese
 
@@ -26,24 +23,11 @@ func (gc *GenContext) WithFile(file *protogen.File, container *cheese.FileCheese
 		file:          file,
 		fileContainer: container,
 	}
-	catoPackage, ok := utils.GetCatoPackageFromFile(file.Desc)
-	if !ok {
-		return ctx
-	}
-	ctx.catoPackage = catoPackage
 	return ctx
 }
 
 func (gc *GenContext) GetCatoPackage() string {
-	return gc.catoPackage
-}
-
-func (gc *GenContext) GetFilePackage() string {
-	return utils.GetGoImportName(gc.GetNowFile().GoImportPath)
-}
-
-func (gc *GenContext) CatoPackage() string {
-	return gc.catoPackage
+	return gc.fileContainer.GetCatoPackage().GetPath()
 }
 
 func (gc *GenContext) GetImportPathAlias(desc protoreflect.MessageDescriptor) string {
@@ -65,7 +49,6 @@ func (gc *GenContext) GetNowFileContainer() *cheese.FileCheese {
 
 func (gc *GenContext) WithMessage(message *protogen.Message, container *cheese.MessageCheese) *GenContext {
 	return &GenContext{
-		catoPackage:      gc.catoPackage,
 		file:             gc.file,
 		fileContainer:    gc.fileContainer,
 		message:          message,
@@ -87,7 +70,6 @@ func (gc *GenContext) GetNowMessageTypeName() string {
 
 func (gc *GenContext) WithField(field *protogen.Field, container *cheese.FieldCheese) *GenContext {
 	return &GenContext{
-		catoPackage:      gc.catoPackage,
 		file:             gc.file,
 		fileContainer:    gc.fileContainer,
 		message:          gc.message,

@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/ncuhome/cato/generated"
@@ -29,14 +28,6 @@ func (k *Key) GetFieldNameCombine() string {
 		filedNames[i] = f.Name
 	}
 	return strings.Join(filedNames, "And")
-}
-
-func (k *Key) GetParamsRaw() []string {
-	data := make([]string, len(k.Fields))
-	for index, field := range k.Fields {
-		data[index] = fmt.Sprintf("%s %s", field.AsParamName(), field.GoType)
-	}
-	return data
 }
 
 type Col struct {

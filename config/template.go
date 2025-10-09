@@ -23,11 +23,14 @@ const (
 	TableColTmpl    = "table_col.tmpl"
 
 	RdbTmpl       = "rdb.tmpl"
+	RdbRepoTmpl   = "rdb_repo.tmpl"
 	RdbDeleteTmpl = "rdb_delete.tmpl"
 	RdbFetchTmpl  = "rdb_fetch.tmpl"
 	RdbUpdateTmpl = "rdb_update.tmpl"
 	RdbInsertTmpl = "rdb_insert.tmpl"
 
+	RepoTmpl       = "repo.tmpl"
+	RepoRepoTmpl   = "repo_repo.tmpl"
 	RepoDeleteTmpl = "repo_delete.tmpl"
 	RepoFetchTmpl  = "repo_fetch.tmpl"
 	RepoUpdateTmpl = "repo_update.tmpl"
@@ -53,12 +56,15 @@ var templateNames = []string{
 	FileTmpl,
 	TableColTmpl,
 
+	RepoTmpl,
+	RepoRepoTmpl,
 	RepoDeleteTmpl,
 	RepoFetchTmpl,
 	RepoUpdateTmpl,
 	RepoInsertTmpl,
 
 	RdbTmpl,
+	RdbRepoTmpl,
 	RdbDeleteTmpl,
 	RdbFetchTmpl,
 	RdbUpdateTmpl,

@@ -13,6 +13,10 @@ import (
 type FileCheese struct {
 	imports       map[string]*models.Import
 	appendImports []*strings.Builder
+	// todo optimize as repo map
+	catoPackage    *models.Import
+	repoPackage    *models.Import
+	rdbRepoPackage *models.Import
 }
 
 func NewFileCheese(file *protogen.File) *FileCheese {
@@ -53,4 +57,31 @@ func (fc *FileCheese) GetImports() []string {
 func (fc *FileCheese) BorrowImportsWriter() io.Writer {
 	fc.appendImports = append(fc.appendImports, new(strings.Builder))
 	return fc.appendImports[len(fc.appendImports)-1]
+}
+
+func (fc *FileCheese) SetCatoPackage(packagePath string) {
+	i := new(models.Import).Init(packagePath)
+	fc.catoPackage = i
+}
+
+func (fc *FileCheese) GetCatoPackage() *models.Import {
+	return fc.catoPackage
+}
+
+func (fc *FileCheese) SetRepoPackage(packagePath string) {
+	i := new(models.Import).Init(packagePath)
+	fc.repoPackage = i
+}
+
+func (fc *FileCheese) GetRepoPackage() *models.Import {
+	return fc.repoPackage
+}
+
+func (fc *FileCheese) SetRdbRepoPackage(packagePath string) {
+	i := new(models.Import).Init(packagePath)
+	fc.repoPackage = i
+}
+
+func (fc *FileCheese) GetRdbRepoPackage() *models.Import {
+	return fc.repoPackage
 }

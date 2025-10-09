@@ -1,9 +1,4 @@
-func (b *basicRepo) DeleteBy{{.KeyNameCombine}}(ctx context.Context, {{.ParamRaw}}) error {
-	container := &{{.ModelType}}{
-	    {{- range .Params}}
-	    {{.FieldName}}: {{.ParamName}}
-	    {{- end}}
-	}
+func (b *basicRepo) DeleteBy{{.KeyNameCombine}}(ctx context.Context, container *{{.ModelType}}) error {
 	cond := squirrel.Eq{
 	    {{- range .Params}}
 	    container.GetCol{{.FieldName}}(): {{.ParamName}}
