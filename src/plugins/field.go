@@ -2,7 +2,6 @@ package plugins
 
 import (
 	"fmt"
-	"io"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -20,14 +19,12 @@ import (
 
 type FieldWorker struct {
 	field       *protogen.Field
-	tags        []*strings.Builder
 	DefaultTags []*models.Kv
 }
 
 func NewFieldCheese(field *protogen.Field) *FieldWorker {
 	return &FieldWorker{
 		field: field,
-		tags:  make([]*strings.Builder, 0),
 	}
 }
 
@@ -37,31 +34,27 @@ func (fw *FieldWorker) RegisterContext(gc *common.GenContext) *common.GenContext
 	return ctx
 }
 
-func (fw *FieldWorker) borrowTagWriter() io.Writer {
-	fw.tags = append(fw.tags, new(strings.Builder))
-	return fw.tags[len(fw.tags)-1]
-}
-
-func (fw *FieldWorker) AsTmplPack(fieldType string) *packs.FieldPack {
+func (fw *FieldWorker) AsTmplPack(fieldType string, tags []string) *packs.FieldPack {
 	pack := &packs.FieldPack{
 		Field: &models.Field{
 			Name:   fw.field.GoName,
 			GoType: fieldType,
 		},
 	}
-	tags := make([]string, len(fw.tags))
+
+	filterTags := make([]string, len(tags))
 	tagMap := make(map[string]struct{})
-	for index := range fw.tags {
-		raw := fw.tags[index].String()
+	for index := range tags {
+		raw := tags[index]
 		tagKey := utils.GetTagKey(raw)
 		_, hasTag := tagMap[tagKey]
 		if tagKey == "" || hasTag {
 			continue
 		}
-		tags[index] = fw.tags[index].String()
+		filterTags[index] = raw
 		tagMap[tagKey] = struct{}{}
 	}
-	pack.Tags = strings.Join(tags, " ")
+	pack.Tags = strings.Join(filterTags, " ")
 	return pack
 }
 
@@ -79,12 +72,13 @@ func (fw *FieldWorker) Active(ctx *common.GenContext) (bool, error) {
 			return false, err
 		}
 	}
+	fdc := ctx.GetNowFieldContainer()
 	// need register tags in ctx
 	for _, scopeTag := range ctx.GetNowMessageContainer().GetScopeTags() {
 		if scopeTag.KV == nil {
 			continue
 		}
-		target := fw.borrowTagWriter()
+		target := fdc.BorrowTagWriter()
 		tagData := fmt.Sprintf("%s:\"%s\"", scopeTag.KV.Key, scopeTag.GetTagValue(fw.field.GoName))
 		_, err := target.Write([]byte(tagData))
 		if err != nil {
@@ -103,6 +97,7 @@ func (fw *FieldWorker) Complete(ctx *common.GenContext) error {
 		mc := ctx.GetNowMessageContainer()
 		mc.SetScopeColType(fw.field.GoName, fieldType)
 	}
-	pack := fw.AsTmplPack(fieldType)
+	fdc := ctx.GetNowFieldContainer()
+	pack := fw.AsTmplPack(fieldType, fdc.GetTags())
 	return config.GetTemplate(config.FieldTmpl).Execute(wr, pack)
 }
