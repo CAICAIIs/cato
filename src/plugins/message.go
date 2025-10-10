@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -273,6 +274,9 @@ func (mw *MessageWorker) completeCols(ctx *common.GenContext) error {
 	if len(cols) == 0 {
 		return nil
 	}
+	sort.Slice(cols, func(i, j int) bool {
+		return cols[i].Name < cols[j].Name
+	})
 	tmpl := config.GetTemplate(config.TableColTmpl)
 	pack := &packs.TableColTmplPack{
 		MessageTypeName: ctx.GetNowMessageTypeName(),

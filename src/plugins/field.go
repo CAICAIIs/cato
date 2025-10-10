@@ -3,7 +3,6 @@ package plugins
 import (
 	"fmt"
 	"io"
-	"log"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
