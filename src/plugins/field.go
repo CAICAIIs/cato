@@ -3,6 +3,7 @@ package plugins
 import (
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -100,6 +101,8 @@ func (fw *FieldWorker) Complete(ctx *common.GenContext) error {
 	fieldType := common.MapperGoTypeName(ctx, fw.field.Desc)
 	if ctx.GetNowFieldContainer().IsJsonTrans() {
 		fieldType = "string"
+		mc := ctx.GetNowMessageContainer()
+		mc.SetScopeColType(fw.field.GoName, fieldType)
 	}
 	pack := fw.AsTmplPack(fieldType)
 	return config.GetTemplate(config.FieldTmpl).Execute(wr, pack)

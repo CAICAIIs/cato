@@ -28,7 +28,3 @@ func (fp *FieldCheese) SetJsonTrans(b bool) {
 func (fp *FieldCheese) IsJsonTrans() bool {
 	return fp.jsonTrans
 }
-
-func (fp *FieldCheese) Complete() {
-
-}

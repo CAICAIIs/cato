@@ -1,12 +1,12 @@
 func (b *basicRepo) FindBy{{.KeyNameCombine}}(ctx context.Context, container *{{.ModelType}}) ({{.FetchReturnType}}, error) {
 	cond := squirrel.Eq{
 	    {{- range .Params}}
-	    container.GetCol{{.FieldName}}(): {{.ParamName}}
+	    container.GetCol{{.FieldName}}(): container.{{.FieldName}},
 	    {{- end}}
 	}
-	sql, args, err := squirrel.Select(container.AllCols()).From(container.TableName()).Where(cond).ToSql()
+	sql, args, err := squirrel.Select(container.AllCols()...).From(container.TableName()).Where(cond).ToSql()
 	if err != nil {
 		return nil, err
 	}
-	return b.{{.FetchFunc}}(ctx, sql, args)
+	return b.{{.FetchFuncName}}(ctx, container.TableName(), sql, args...)
 }

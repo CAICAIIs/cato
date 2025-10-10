@@ -10,4 +10,6 @@ type RdbTmplPack struct {
 	RepoPackageAlias      string
 	RepoPackage           string
 	ModelType             string
+	FetchOneReturnType    string
+	FetchAllReturnType    string
 }

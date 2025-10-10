@@ -49,6 +49,7 @@ func (f *FieldKeysButter) Register(ctx *common.GenContext) error {
 		key := &models.Key{
 			Fields:  []*models.Field{field},
 			KeyType: f.values[index].KeyType,
+			KeyName: f.values[index].KeyName,
 		}
 		mc.AddScopeKey(key)
 	}

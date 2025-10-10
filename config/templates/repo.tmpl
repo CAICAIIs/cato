@@ -1,11 +1,13 @@
+// code generate by proto-gen-cato, DO NOT EDIT
+
 package {{.RepoPackageName}}
 
 import (
 	"context"
 
-	{{-if .IsModelAnotherPackage}}
+	{{- if not .IsModelAnotherPackage}}
     {{.ModelPackageAlias}} "{{.ModelPackage}}"
-    {{-end}}
+    {{- end}}
 )
 
 type basic interface {

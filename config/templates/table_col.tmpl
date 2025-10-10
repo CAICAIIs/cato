@@ -9,7 +9,7 @@ func (model *{{.MessageTypeName}}) AllCols() []string {
 func (model *{{.MessageTypeName}}) ToMap() map[string]interface{} {
     return map[string]interface{}{
         {{- range .Cols}}
-        model.GetCol{{.Name}}() : model.{{Name}}
+        model.GetCol{{.Name}}() : model.{{.Name}},
         {{- end}}
     }
 }

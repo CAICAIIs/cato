@@ -1,3 +1,5 @@
+// code generate by proto-gen-cato, DO NOT EDIT
+
 package {{.RdbRepoPackage}}
 
 import (
@@ -5,9 +7,9 @@ import (
 
 	"github.com/Masterminds/squirrel"
 
-    {{-if .IsModelAnotherPackage}}
+    {{- if not .IsModelAnotherPackage}}
 	{{.ModelPackageAlias}} "{{.ModelPackage}}"
-	{{-end}}
+	{{- end}}
 )
 
 type basicRepo struct {
@@ -15,6 +17,6 @@ type basicRepo struct {
 }
 
 
-{{-range .RdbRepoFuncs}}
+{{- range .RdbRepoFuncs}}
 {{.}}
-{{-end}}
+{{- end}}

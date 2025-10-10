@@ -30,6 +30,7 @@ func NewMessageCheese() *MessageCheese {
 		imports:   make([]*strings.Builder, 0),
 		scopeTags: make(map[string]*models.Tag),
 		scopeCols: make(map[string]*models.Col),
+		scopeKeys: make(map[string]*models.Key),
 	}
 }
 
@@ -119,6 +120,14 @@ func (mc *MessageCheese) AddScopeCol(col *models.Col) {
 	mc.scopeCols[colName] = col
 }
 
+func (mc *MessageCheese) SetScopeColType(fieldName string, colType string) {
+	for _, col := range mc.scopeCols {
+		if col.Name == fieldName {
+			col.GoType = colType
+		}
+	}
+}
+
 func (mc *MessageCheese) AddScopeTag(tag *models.Tag) {
 	if tag == nil || tag.KV == nil {
 		return
@@ -157,7 +166,7 @@ func (mc *MessageCheese) GetScopeCols() []*models.Col {
 }
 
 func (mc *MessageCheese) GetScopeKeys() []*models.Key {
-	keys, index := make([]*models.Key, 0), 0
+	keys, index := make([]*models.Key, len(mc.scopeKeys)), 0
 	for _, key := range mc.scopeKeys {
 		keys[index] = key
 		index++

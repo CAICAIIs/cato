@@ -1,7 +1,9 @@
 package packs
 
 type ModelContentTmplPack struct {
-	ModelName string
-	Fields    []string
-	Methods   []string
+	PackageName string
+	Imports     []string
+	ModelName   string
+	Fields      []string
+	Methods     []string
 }

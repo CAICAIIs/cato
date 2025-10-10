@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"path/filepath"
 	"strings"
 
 	"google.golang.org/protobuf/compiler/protogen"
@@ -30,13 +31,11 @@ const (
 
 type MessageWorker struct {
 	message *protogen.Message
-	gfs     []*models.GenerateFileDesc
 }
 
 func NewMessageWorker(msg *protogen.Message) *MessageWorker {
 	mp := new(MessageWorker)
 	mp.message = msg
-	mp.gfs = make([]*models.GenerateFileDesc, 0)
 	return mp
 }
 
@@ -53,50 +52,83 @@ func (mw *MessageWorker) filename() string {
 	return mapper(patterns)
 }
 
-func (mw *MessageWorker) GenerateModelFile(ctx *common.GenContext) (*models.GenerateFileDesc, error) {
+func (mw *MessageWorker) GetFiles(ctx *common.GenContext) ([]*models.GenerateFileDesc, error) {
+	files := make([]*models.GenerateFileDesc, 0)
+	gen := []func(ctx *common.GenContext) ([]*models.GenerateFileDesc, error){
+		mw.generateModelFile, mw.generateModelExtendFile, mw.generateModelRepoFiles, mw.generateModelRdbFiles,
+	}
+	var err error
+	for _, f := range gen {
+		gfs, ex := f(ctx)
+		if ex != nil {
+			err = errors.Join(err, ex)
+		}
+		files = append(files, gfs...)
+	}
+	return files, err
+}
+
+func (mw *MessageWorker) generateModelFile(ctx *common.GenContext) ([]*models.GenerateFileDesc, error) {
 	sw := new(strings.Builder)
 	tmpl := config.GetTemplate(config.ModelTmpl)
 	mc := ctx.GetNowMessageContainer()
+	fc := ctx.GetNowFileContainer()
+	modelPack := fc.GetCatoPackage()
+	if modelPack == nil || modelPack.IsEmpty() {
+		return []*models.GenerateFileDesc{}, nil
+	}
 	pack := &packs.ModelContentTmplPack{
-		ModelName: mw.message.GoIdent.GoName,
-		Fields:    mc.GetField(),
-		Methods:   mc.GetMethods(),
+		PackageName: utils.GetGoPackageName(modelPack.GetPath()),
+		ModelName:   mw.message.GoIdent.GoName,
+		Imports:     append(fc.GetImports(), mc.GetImports()...),
+		Fields:      mc.GetField(),
+		Methods:     mc.GetMethods(),
 	}
 	err := tmpl.Execute(sw, pack)
 	if err != nil {
 		log.Fatalln("[-] models plugger exec tmpl error, ", err)
 		return nil, err
 	}
-	return &models.GenerateFileDesc{
-		Name:        fmt.Sprintf("%s.cato.go", mw.filename()),
+	filename := filepath.Join(modelPack.ImportPath, fmt.Sprintf("%s.cato.go", mw.filename()))
+	return []*models.GenerateFileDesc{{
+		Name:        filename,
 		Content:     sw.String(),
 		CheckExists: false,
-	}, nil
+	}}, nil
 }
 
-func (mw *MessageWorker) GenerateModelExtendFile(ctx *common.GenContext) (*models.GenerateFileDesc, error) {
+func (mw *MessageWorker) generateModelExtendFile(ctx *common.GenContext) ([]*models.GenerateFileDesc, error) {
 	sw := new(strings.Builder)
 	tmpl := config.GetTemplate(config.TableExtendTmpl)
 	fc := ctx.GetNowFileContainer()
 	mc := ctx.GetNowMessageContainer()
+	modelExtPack := fc.GetCatoExtPackage()
+	if modelExtPack == nil || modelExtPack.IsEmpty() {
+		return []*models.GenerateFileDesc{}, nil
+	}
 	pack := &packs.TableExtendTmplPack{
-		PackageName: utils.GetGoPackageName(fc.GetCatoPackage().ImportPath),
-		Extends:     mc.GetExtra(),
+		PackageName:   utils.GetGoPackageName(modelExtPack.ImportPath),
+		ExtendMethods: mc.GetExtra(),
 	}
 	err := tmpl.Execute(sw, pack)
 	if err != nil {
 		log.Fatalln("[-] plugger model exec extend tmpl error, ", err)
 		return nil, err
 	}
-	return &models.GenerateFileDesc{
-		Name:        fmt.Sprintf("%s_extend.go", mw.filename()),
+	filename := filepath.Join(modelExtPack.ImportPath, fmt.Sprintf("%s_extend.go", mw.filename()))
+	return []*models.GenerateFileDesc{{
+		Name:        filename,
 		Content:     sw.String(),
 		CheckExists: true,
-	}, nil
+	}}, nil
 }
-func (mw *MessageWorker) GenerateModelRepoFiles(ctx *common.GenContext) ([]*models.GenerateFileDesc, error) {
+
+func (mw *MessageWorker) generateModelRepoFiles(ctx *common.GenContext) ([]*models.GenerateFileDesc, error) {
 	fc := ctx.GetNowFileContainer()
 	repoPack := fc.GetRepoPackage()
+	if repoPack == nil || repoPack.IsEmpty() {
+		return []*models.GenerateFileDesc{}, nil
+	}
 	modelPack := fc.GetCatoPackage()
 	mc := ctx.GetNowMessageContainer()
 	pack := &packs.RepoTmplPack{
@@ -113,30 +145,35 @@ func (mw *MessageWorker) GenerateModelRepoFiles(ctx *common.GenContext) ([]*mode
 		log.Fatalln("[-] plugger repo exec tmpl error, ", err)
 		return nil, err
 	}
+	filename := filepath.Join(repoPack.ImportPath, fmt.Sprintf("%s_repo.cato.go", mw.filename()))
 	files = append(files, &models.GenerateFileDesc{
-		Name:        fmt.Sprintf("%s_repo.cato.go", mw.filename()),
+		Name:        filename,
 		Content:     sw.String(),
 		CheckExists: false,
 	})
 	extraSw := new(strings.Builder)
-	err = config.GetTemplate(config.RepoRepoTmpl).Execute(extraSw, repoPack)
+	err = config.GetTemplate(config.RepoRepoTmpl).Execute(extraSw, pack)
 	if err != nil {
 		log.Fatalln("[-] plugger repo repo tmpl error, ", err)
 		return nil, err
 	}
+	filename = filepath.Join(repoPack.ImportPath, fmt.Sprintf("%s_repo.go", mw.filename()))
 	files = append(files, &models.GenerateFileDesc{
-		Name:        fmt.Sprintf("%s_repo.go", mw.filename()),
+		Name:        filename,
 		Content:     extraSw.String(),
 		CheckExists: true,
 	})
 	return files, nil
 }
 
-func (mw *MessageWorker) GenerateModelRdbFiles(ctx *common.GenContext) ([]*models.GenerateFileDesc, error) {
+func (mw *MessageWorker) generateModelRdbFiles(ctx *common.GenContext) ([]*models.GenerateFileDesc, error) {
 	fc := ctx.GetNowFileContainer()
 	repoPack := fc.GetRepoPackage()
 	modelPack := fc.GetCatoPackage()
 	rdbPack := fc.GetRdbRepoPackage()
+	if rdbPack == nil || rdbPack.IsEmpty() {
+		return []*models.GenerateFileDesc{}, nil
+	}
 	mc := ctx.GetNowMessageContainer()
 	pack := &packs.RdbTmplPack{
 		RdbRepoPackage:        utils.GetGoPackageName(rdbPack.ImportPath),
@@ -149,6 +186,15 @@ func (mw *MessageWorker) GenerateModelRdbFiles(ctx *common.GenContext) ([]*model
 		RepoPackage:           repoPack.ImportPath,
 		ModelType:             ctx.GetNowMessageTypeName(),
 	}
+	// todo rdb engine funcs can move into messageCheese
+	pack.FetchOneReturnType = fmt.Sprintf("*%s", pack.ModelType)
+	if !modelPack.IsSame(rdbPack) {
+		pack.FetchOneReturnType = fmt.Sprintf("*%s.%s", modelImportAlias, pack.ModelType)
+	}
+	pack.FetchAllReturnType = fmt.Sprintf("[]*%s", rdbPack.ImportPath)
+	if !modelPack.IsSame(rdbPack) {
+		pack.FetchAllReturnType = fmt.Sprintf("[]*%s.%s", modelImportAlias, pack.ModelType)
+	}
 	files := make([]*models.GenerateFileDesc, 0)
 	sw := new(strings.Builder)
 	err := config.GetTemplate(config.RdbTmpl).Execute(sw, pack)
@@ -156,19 +202,21 @@ func (mw *MessageWorker) GenerateModelRdbFiles(ctx *common.GenContext) ([]*model
 		log.Fatalln("[-] plugger rdb exec tmpl error, ", err)
 		return nil, err
 	}
+	filename := filepath.Join(rdbPack.ImportPath, fmt.Sprintf("%s_rdb.cato.go", mw.filename()))
 	files = append(files, &models.GenerateFileDesc{
-		Name:        fmt.Sprintf("%s_rdb.cato.go", mw.filename()),
+		Name:        filename,
 		Content:     sw.String(),
 		CheckExists: false,
 	})
 	extraSw := new(strings.Builder)
-	err = config.GetTemplate(config.RepoRepoTmpl).Execute(extraSw, repoPack)
+	err = config.GetTemplate(config.RdbRepoTmpl).Execute(extraSw, pack)
 	if err != nil {
 		log.Fatalln("[-] plugger rdb repo tmpl error, ", err)
 		return nil, err
 	}
+	filename = filepath.Join(rdbPack.ImportPath, fmt.Sprintf("%s_rdb.go", mw.filename()))
 	files = append(files, &models.GenerateFileDesc{
-		Name:        fmt.Sprintf("%s_rdb.go", mw.filename()),
+		Name:        filename,
 		Content:     extraSw.String(),
 		CheckExists: true,
 	})
@@ -237,8 +285,9 @@ type repoCompleteParam struct {
 	basePath *models.Import
 	path     *models.Import
 	tmpls    []string
-	uTmpls   []string
-	writer   io.Writer
+	ukTmpls  []string
+	sgTmpls  []string
+	writer   func() io.Writer
 }
 
 func (mw *MessageWorker) completeRepo(ctx *common.GenContext, params []*packs.RepoFuncTmplPack) error {
@@ -250,9 +299,10 @@ func (mw *MessageWorker) completeRepo(ctx *common.GenContext, params []*packs.Re
 		repoParam := &repoCompleteParam{
 			basePath: fc.GetCatoPackage(),
 			path:     repoPackage,
-			tmpls:    []string{config.RepoFetchTmpl, config.RepoInsertTmpl},
-			uTmpls:   []string{config.RepoUpdateTmpl, config.RepoDeleteTmpl},
-			writer:   mc.BorrowRepoWriter(),
+			tmpls:    []string{config.RepoFetchTmpl},
+			ukTmpls:  []string{config.RepoUpdateTmpl, config.RepoDeleteTmpl},
+			sgTmpls:  []string{config.RepoInsertTmpl},
+			writer:   mc.BorrowRepoWriter,
 		}
 		runParams = append(runParams, repoParam)
 	}
@@ -261,9 +311,10 @@ func (mw *MessageWorker) completeRepo(ctx *common.GenContext, params []*packs.Re
 		rdbParam := &repoCompleteParam{
 			basePath: fc.GetCatoPackage(),
 			path:     rdbPackage,
-			tmpls:    []string{config.RdbFetchTmpl, config.RdbInsertTmpl},
-			uTmpls:   []string{config.RdbUpdateTmpl, config.RdbDeleteTmpl},
-			writer:   mc.BorrowRdbWriter(),
+			tmpls:    []string{config.RdbFetchTmpl},
+			ukTmpls:  []string{config.RdbUpdateTmpl, config.RdbDeleteTmpl},
+			sgTmpls:  []string{config.RdbInsertTmpl},
+			writer:   mc.BorrowRdbWriter,
 		}
 		runParams = append(runParams, rdbParam)
 	}
@@ -276,23 +327,34 @@ func (mw *MessageWorker) completeRepo(ctx *common.GenContext, params []*packs.Re
 
 func (mw *MessageWorker) repoInsRunner(rcp *repoCompleteParam, params []*packs.RepoFuncTmplPack) error {
 	isRepoSame := rcp.basePath.IsSame(rcp.path)
-	var err error
+	var (
+		err     error
+		sgParam *packs.RepoFuncTmplPack
+	)
+
 	for _, param := range params {
 		cparam := param.Copy()
 		cparam.IsModelAnotherPackage = isRepoSame
-		if cparam.IsModelAnotherPackage {
+		if !cparam.IsModelAnotherPackage {
 			cparam.ModelType = fmt.Sprintf("%s.%s", cparam.ModelPackageAlias, param.ModelType)
 		}
 		cparam.Tmpls = append(cparam.Tmpls, rcp.tmpls...)
 		if cparam.IsUniqueKey {
-			cparam.Tmpls = append(cparam.Tmpls, rcp.uTmpls...)
+			cparam.Tmpls = append(cparam.Tmpls, rcp.ukTmpls...)
 			cparam.FetchReturnType = fmt.Sprintf("*%s", cparam.ModelType)
 		} else {
 			cparam.FetchReturnType = fmt.Sprintf("[]*%s", cparam.ModelType)
 		}
-		for _, tmpl := range cparam.Tmpls {
-			err = errors.Join(err, config.GetTemplate(tmpl).Execute(rcp.writer, cparam))
+		if sgParam == nil {
+			sgParam = cparam.Copy()
 		}
+		for _, tmpl := range cparam.Tmpls {
+			err = errors.Join(err, config.GetTemplate(tmpl).Execute(rcp.writer(), cparam))
+		}
+	}
+	// todo need a better way to deal once tmpl
+	for _, tmpl := range rcp.sgTmpls {
+		err = errors.Join(err, config.GetTemplate(tmpl).Execute(rcp.writer(), sgParam))
 	}
 	return err
 }

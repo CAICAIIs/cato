@@ -59,6 +59,9 @@ func (t *TableBasicButter) Register(ctx *common.GenContext) error {
 	if err != nil {
 		return err
 	}
+	// need set ext file
+	fc := ctx.GetNowFileContainer()
+	fc.SetCatoExtPackage(fc.GetCatoPackage().ImportPath)
 	tmpl := config.GetTemplate(config.TableNameTmpl)
 	// check if the table name is simple
 	if t.value.NameOption.GetSimpleName() != "" {

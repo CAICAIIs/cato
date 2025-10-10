@@ -4,8 +4,15 @@ import (
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	"github.com/ncuhome/cato/generated"
+	"github.com/ncuhome/cato/src/plugins/butter"
 	"github.com/ncuhome/cato/src/plugins/common"
 )
+
+func init() {
+	butter.Register(func() butter.Butter {
+		return new(PackageButter)
+	})
+}
 
 type PackageButter struct {
 	value *generated.CatoOptions

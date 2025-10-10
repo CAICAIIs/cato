@@ -23,7 +23,8 @@ func main() {
 	}
 	pbResponse := new(pluginpb.CodeGeneratorResponse)
 	generator := src.NewCatoGenerator(pbRequest)
-	generator.Generate(pbResponse)
+	files := generator.Generate()
+	pbResponse.File = append(pbResponse.File, files...)
 	output, err := proto.Marshal(pbResponse)
 	if err != nil {
 		log.Fatalf("[-] cato marshaling response error: %#v", err)

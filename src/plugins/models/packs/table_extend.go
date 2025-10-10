@@ -1,6 +1,6 @@
 package packs
 
 type TableExtendTmplPack struct {
-	PackageName string
-	Extends     []string
+	PackageName   string
+	ExtendMethods []string
 }

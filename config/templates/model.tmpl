@@ -1,3 +1,15 @@
+// code generate by proto-gen-cato, DO NOT EDIT
+
+package {{.PackageName}}
+
+{{- if gt (len .Imports) 0}}
+import (
+    {{- range .Imports}}
+    {{.}}
+    {{- end}}
+)
+{{- end}}
+
 type {{ .ModelName }} struct {
 {{- range .Fields }}
     {{ . }}

@@ -11,7 +11,7 @@ import (
 const (
 	tmplPath = "templates"
 
-	ColArrivalTmpl  = "col_arrival.tmpl"
+	ColArrivalTmpl  = "cols_arrival.tmpl"
 	TableNameTmpl   = "table_name.tmpl"
 	TableExtendTmpl = "table_extend.tmpl"
 	TimeFormatTmpl  = "time_format.tmpl"

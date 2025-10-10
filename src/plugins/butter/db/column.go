@@ -61,6 +61,10 @@ func (c *ColFieldButter) addColInfo(ctx *common.GenContext) error {
 	mc := ctx.GetNowMessageContainer()
 	field := ctx.GetNowField()
 	fieldType := common.MapperGoTypeName(ctx, field.Desc)
+	// todo: need a better way to check if set string type
+	if field.Desc.Kind() == protoreflect.MessageKind {
+		fieldType = "string"
+	}
 	fieldPack := &models.Field{Name: field.GoName, GoType: fieldType}
 	colDesc := c.value.GetColDesc()
 	if colDesc == nil {
