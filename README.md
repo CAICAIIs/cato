@@ -1,8 +1,4 @@
-好的，这是为您提供的专业 README 翻译和优化版本。此版本结构更清晰，语言更符合开源项目的标准，并直接整合了您提供的所有信息。
-
----
-
-# Cato
+Cato
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/NCUHOME/cato/blob/main/LICENSE)
 [![GitHub issues](https://img.shields.io/github/issues/NCUHOME/cato)](https://github.com/NCUHOME/cato/issues)

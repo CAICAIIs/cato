@@ -1,7 +1,3 @@
-好的，这是为您优化后的中文版 README。此版本保留了您原文的所有核心信息，但结构更清晰、语言更精炼，更符合一个优秀开源项目的文档标准。
-
----
-
 # Cato
 
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/NCUHOME/cato/blob/main/LICENSE)
