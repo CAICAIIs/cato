@@ -23,6 +23,7 @@ const (
 	ModelTmpl       = "model.tmpl"
 	FileTmpl        = "file.tmpl"
 	TableColTmpl    = "table_col.tmpl"
+	ColsGroupTmpl   = "cols_group.tmpl"
 
 	RdbTmpl       = "rdb.tmpl"
 	RdbRepoTmpl   = "rdb_repo.tmpl"
@@ -65,6 +66,7 @@ var templateNames = []string{
 	ModelTmpl,
 	FileTmpl,
 	TableColTmpl,
+	ColsGroupTmpl,
 
 	RepoTmpl,
 	RepoRepoTmpl,

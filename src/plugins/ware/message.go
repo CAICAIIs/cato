@@ -135,7 +135,23 @@ func (mw *MessageWare) completeCols(ctx *common.GenContext) error {
 		MessageTypeName: ctx.GetNowMessageTypeName(),
 		Cols:            cols,
 	}
-	return tmpl.Execute(mc.BorrowMethodsWriter(), pack)
+	err := tmpl.Execute(mc.BorrowMethodsWriter(), pack)
+	if err != nil {
+		return err
+	}
+	// check if it has col groups
+	colGroups := mc.GetColGroups()
+	for groupName, cols := range colGroups {
+		groupPack := &packs.ColsGroupPack{
+			MessageTypeName: ctx.GetNowMessageTypeName(),
+			GroupName:       groupName,
+			Cols:            cols,
+		}
+		colGroupTmpl := config.GetTemplate(config.ColsGroupTmpl)
+
+		err = errors.Join(colGroupTmpl.Execute(mc.BorrowMethodsWriter(), groupPack))
+	}
+	return err
 }
 
 type repoCompleteParam struct {

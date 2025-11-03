@@ -40,12 +40,13 @@ func (fw *FieldWare) RegisterContext(gc *common.GenContext) *common.GenContext {
 	return ctx
 }
 
-func (fw *FieldWare) asTmplPack(fieldType string, tags []string) *packs.FieldPack {
+func (fw *FieldWare) asTmplPack(fieldType string, tags []string, comments []string) *packs.FieldPack {
 	pack := &packs.FieldPack{
 		Field: &models.Field{
 			Name:   fw.field.GoName,
 			GoType: fieldType,
 		},
+		Comments: strings.Join(comments, ", "),
 	}
 
 	filterTags := make([]string, len(tags))
@@ -95,7 +96,7 @@ func (fw *FieldWare) Complete(ctx *common.GenContext) error {
 		mc.SetScopeColType(fw.field.GoName, fieldType)
 	}
 	fdc := ctx.GetNowFieldContainer()
-	pack := fw.asTmplPack(fieldType, fdc.GetTags())
+	pack := fw.asTmplPack(fieldType, fdc.GetTags(), fdc.GetComments())
 	return config.GetTemplate(config.FieldTmpl).Execute(wr, pack)
 }
 

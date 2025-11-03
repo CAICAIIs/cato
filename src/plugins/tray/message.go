@@ -16,24 +16,26 @@ type MessageTray struct {
 	rdb     []*strings.Builder
 	imports []*strings.Builder
 
-	scopeTags map[string]*models.Tag
-	scopeCols map[string]*models.Col
-	scopeKeys map[string]*models.Key
+	scopeTags      map[string]*models.Tag
+	scopeCols      map[string]*models.Col
+	scopeKeys      map[string]*models.Key
+	scopeGroupCols map[string][]string
 
 	needExtraFile bool
 }
 
 func NewMessageTray() *MessageTray {
 	return &MessageTray{
-		methods:   make([]*strings.Builder, 0),
-		fields:    make([]*strings.Builder, 0),
-		extra:     make([]*strings.Builder, 0),
-		repo:      make([]*strings.Builder, 0),
-		rdb:       make([]*strings.Builder, 0),
-		imports:   make([]*strings.Builder, 0),
-		scopeTags: make(map[string]*models.Tag),
-		scopeCols: make(map[string]*models.Col),
-		scopeKeys: make(map[string]*models.Key),
+		methods:        make([]*strings.Builder, 0),
+		fields:         make([]*strings.Builder, 0),
+		extra:          make([]*strings.Builder, 0),
+		repo:           make([]*strings.Builder, 0),
+		rdb:            make([]*strings.Builder, 0),
+		imports:        make([]*strings.Builder, 0),
+		scopeTags:      make(map[string]*models.Tag),
+		scopeCols:      make(map[string]*models.Col),
+		scopeKeys:      make(map[string]*models.Key),
+		scopeGroupCols: make(map[string][]string),
 	}
 }
 
@@ -184,6 +186,18 @@ func (mc *MessageTray) GetScopeKeys() []*models.Key {
 		return keys[i].KeyName < keys[j].KeyName
 	})
 	return keys
+}
+
+func (mc *MessageTray) GetColGroups() map[string][]string {
+	return mc.scopeGroupCols
+}
+
+func (mc *MessageTray) AddColIntoGroup(groupName string, colName string) {
+	_, ok := mc.scopeGroupCols[groupName]
+	if !ok {
+		mc.scopeGroupCols[groupName] = make([]string, 0)
+	}
+	mc.scopeGroupCols[groupName] = append(mc.scopeGroupCols[groupName], colName)
 }
 
 func (mc *MessageTray) SetNeedExtraFile(need bool) {

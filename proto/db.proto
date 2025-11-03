@@ -47,6 +47,14 @@ message ColumnDescriptor {
   bool nullable = 3;
   string default = 4;
   string comment = 5;
+  // col_group will merge field into func Get{{GroupName}}Cols() []string
+  // for example:
+  //     string a = 1; // field_name = "col_a", col_group = "example"
+  //     string b = 2; // field_name = "col_b", col_group = "example"
+  // and the generated dto struct
+  // will has
+  //  func GetExampleCols() []string {return []string{"col_a", "col_b"}}
+  string col_group = 6;
 }
 
 message JsonTransOption {

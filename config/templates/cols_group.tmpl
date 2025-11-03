@@ -1,0 +1,7 @@
+func (model *{{.MessageTypeName}}) Get{{.GroupName}}Cols() []string {
+    return []string{
+        {{- range .Cols}}
+        "{{.}}",
+        {{- end}}
+    }
+}

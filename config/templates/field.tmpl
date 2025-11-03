@@ -1,1 +1,1 @@
-{{ .Name }} {{ .GoType }} {{if gt (len .Tags) 0}}`{{.Tags}}`{{end}}
+{{ .Name }} {{ .GoType }} {{if gt (len .Tags) 0}}`{{.Tags}}`{{end}} {{- if ne .Comments ""}}//{{.Comments}}{{- end}}

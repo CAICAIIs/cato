@@ -1,6 +1,7 @@
 package db
 
 import (
+	"errors"
 	"log"
 
 	"google.golang.org/protobuf/reflect/protoreflect"
@@ -45,16 +46,16 @@ func (c *ColFieldSprinkle) WorkOn(desc protoreflect.Descriptor) bool {
 
 func (c *ColFieldSprinkle) Register(ctx *common.GenContext) error {
 	// self-tags has the highest priority
-	err := c.addTagInfo(ctx)
-	if err != nil {
-		return err
+	runner := []func(ctx *common.GenContext) error{
+		c.addTagInfo,
+		c.addColInfo,
+		c.appendColComment,
 	}
-	// add col func
-	err = c.addColInfo(ctx)
-	if err != nil {
-		return err
+	var err error
+	for _, fn := range runner {
+		err = errors.Join(fn(ctx))
 	}
-	return nil
+	return err
 }
 
 func (c *ColFieldSprinkle) addColInfo(ctx *common.GenContext) error {
@@ -83,7 +84,15 @@ func (c *ColFieldSprinkle) addColInfo(ctx *common.GenContext) error {
 		FieldType:       fieldType,
 	}
 	tmpl := config.GetTemplate(config.ColArrivalTmpl)
-	return tmpl.Execute(mc.BorrowMethodsWriter(), colArrivalPack)
+	err := tmpl.Execute(mc.BorrowMethodsWriter(), colArrivalPack)
+	if err != nil {
+		return err
+	}
+	// if it has col group, need add col group into group
+	if colDesc.GetColGroup() != "" {
+		mc.AddColIntoGroup(colDesc.GetColGroup(), colName)
+	}
+	return nil
 }
 
 func (c *ColFieldSprinkle) addTagInfo(ctx *common.GenContext) error {
@@ -110,4 +119,15 @@ func (c *ColFieldSprinkle) addTagInfo(ctx *common.GenContext) error {
 	}
 	tmpl := config.GetTemplate(config.TagTmpl)
 	return tmpl.Execute(fc.BorrowTagWriter(), tags)
+}
+
+// appendColComment will append table column comment to struct field
+func (c *ColFieldSprinkle) appendColComment(ctx *common.GenContext) error {
+	col := c.value.GetColDesc()
+	if col == nil || col.Comment == "" {
+		return nil
+	}
+	w := ctx.GetNowFieldContainer().BorrowCommentsWriter()
+	_, err := w.Write([]byte(col.Comment))
+	return err
 }
