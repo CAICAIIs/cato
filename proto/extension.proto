@@ -19,6 +19,7 @@ extend google.protobuf.MessageOptions {
 
   cato.db.DbOption db_opt = 60001;
   cato.db.TableOption table_opt = 60002;
+  cato.db.DdlOptions ddl_opt = 60003;
 
   cato.struct.StructOption struct_opt = 61001;
 }

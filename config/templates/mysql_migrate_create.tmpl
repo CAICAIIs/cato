@@ -1,0 +1,6 @@
+USE {{.Database}};
+CREATE TABLE {{.TableName}} (
+{{- range .ColDefines }}
+    {{.ColName}} {{.ColType}} {{.NullExpr}} {{.DefaultValue}} {{.Extra}} {{.Comment}}
+{{- end }}
+) {{.Engine}} {{.Charset}} {{.Comment}}

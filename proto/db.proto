@@ -10,6 +10,18 @@ message DbOption {
   string name = 1;
 }
 
+message DdlOptions {
+  string sql_type = 1;
+  string location = 2;
+  MysqlImplDdlOpt mysql_impl_opt = 3;
+}
+
+message MysqlImplDdlOpt {
+  string charset = 1;
+  string comment = 2;
+  string engine = 3;
+}
+
 message TableNameOption {
   string simple_name = 1;
   bool lazy_name = 2;
@@ -17,9 +29,7 @@ message TableNameOption {
 
 message TableOption {
   TableNameOption name_option = 1;
-  string comment = 2;
-  string charset = 3;
-  cato.struct.FieldMapper field_mapper = 4;
+  cato.struct.FieldMapper field_mapper = 2;
 }
 
 enum DBKeyType {
@@ -33,7 +43,6 @@ enum DBKeyType {
 message DBKey {
   string key_name = 1;
   DBKeyType key_type = 2;
-  bool auto_incr = 3;
 }
 
 message TimeOption {
@@ -55,6 +64,7 @@ message ColumnDescriptor {
   // will has
   //  func GetExampleCols() []string {return []string{"col_a", "col_b"}}
   string col_group = 6;
+  bool auto_incr = 7;
 }
 
 message JsonTransOption {
