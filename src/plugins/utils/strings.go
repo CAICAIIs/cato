@@ -68,11 +68,9 @@ func SplitCamelWords(s string) []string {
 		isNewWord := unicode.IsLower(prev) || (unicode.IsUpper(prev) && nextIsLower)
 		// Split when current char is uppercase and marks a new word boundary
 		shouldSplit := unicode.IsUpper(r) && isNewWord
-		if shouldSplit {
-			if b.Len() > 0 {
-				words = append(words, b.String())
-				b.Reset()
-			}
+		if shouldSplit && b.Len() > 0 {
+			words = append(words, b.String())
+			b.Reset()
 		}
 		b.WriteRune(unicode.ToLower(r))
 	}
