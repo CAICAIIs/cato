@@ -58,14 +58,20 @@ func SplitCamelWords(s string) []string {
 	words := make([]string, 0)
 	var b strings.Builder
 	for i, r := range runes {
-		if i > 0 {
-			prev := runes[i-1]
-			nextIsLower := i+1 < len(runes) && unicode.IsLower(runes[i+1])
-			if unicode.IsUpper(r) && (unicode.IsLower(prev) || (unicode.IsUpper(prev) && nextIsLower)) {
-				if b.Len() > 0 {
-					words = append(words, b.String())
-					b.Reset()
-				}
+		if i == 0 {
+			b.WriteRune(unicode.ToLower(r))
+			continue
+		}
+		prev := runes[i-1]
+		nextIsLower := i+1 < len(runes) && unicode.IsLower(runes[i+1])
+		// Check if we're at the start of a new word (lowercase to uppercase, or uppercase sequence ending)
+		isNewWord := unicode.IsLower(prev) || (unicode.IsUpper(prev) && nextIsLower)
+		// Split when current char is uppercase and marks a new word boundary
+		shouldSplit := unicode.IsUpper(r) && isNewWord
+		if shouldSplit {
+			if b.Len() > 0 {
+				words = append(words, b.String())
+				b.Reset()
 			}
 		}
 		b.WriteRune(unicode.ToLower(r))
